@@ -37,7 +37,7 @@ export const requestPhoneCode = createServerFn({ method: "POST" })
     const { data: tgUser } = await supabaseAdmin
       .from("telegram_users")
       .select("chat_id, first_name, phone_number")
-      .eq("phone_number", data.phone)
+      .eq("phone_number", toSupabasePhone(data.phone))
       .maybeSingle();
 
     if (!tgUser) throw new Error(NOT_REGISTERED_MSG);
