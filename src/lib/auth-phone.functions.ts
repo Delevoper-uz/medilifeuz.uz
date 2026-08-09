@@ -39,6 +39,7 @@ export const requestPhoneCode = createServerFn({ method: "POST" })
       .from("telegram_users")
       .select("chat_id, first_name, phone_number")
       .in("phone_number", phoneVariants(data.phone))
+      .limit(1)
       .maybeSingle();
 
     if (!tgUser) throw new Error(NOT_REGISTERED_MSG);
@@ -140,6 +141,7 @@ export const verifyPhoneCode = createServerFn({ method: "POST" })
       .from("telegram_users")
       .select("first_name, last_name")
       .in("phone_number", phoneVariants(data.phone))
+      .limit(1)
       .maybeSingle();
 
     const tgName = [tgUser?.first_name, tgUser?.last_name].filter(Boolean).join(" ").trim();
