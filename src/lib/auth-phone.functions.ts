@@ -138,7 +138,7 @@ export const verifyPhoneCode = createServerFn({ method: "POST" })
     const { data: tgUser } = await supabaseAdmin
       .from("telegram_users")
       .select("first_name, last_name")
-      .eq("phone_number", data.phone)
+      .eq("phone_number", toSupabasePhone(data.phone))
       .maybeSingle();
 
     const tgName = [tgUser?.first_name, tgUser?.last_name].filter(Boolean).join(" ").trim();
