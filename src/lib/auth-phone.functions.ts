@@ -38,7 +38,7 @@ export const requestPhoneCode = createServerFn({ method: "POST" })
     const { data: tgUser } = await supabaseAdmin
       .from("telegram_users")
       .select("chat_id, first_name, phone_number")
-      .eq("phone_number", toSupabasePhone(data.phone))
+      .in("phone_number", phoneVariants(data.phone))
       .maybeSingle();
 
     if (!tgUser) throw new Error(NOT_REGISTERED_MSG);
@@ -139,7 +139,7 @@ export const verifyPhoneCode = createServerFn({ method: "POST" })
     const { data: tgUser } = await supabaseAdmin
       .from("telegram_users")
       .select("first_name, last_name")
-      .eq("phone_number", toSupabasePhone(data.phone))
+      .in("phone_number", phoneVariants(data.phone))
       .maybeSingle();
 
     const tgName = [tgUser?.first_name, tgUser?.last_name].filter(Boolean).join(" ").trim();
