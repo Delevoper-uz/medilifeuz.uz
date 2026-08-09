@@ -19,30 +19,40 @@ const VerifySchema = z.object({
   consume: z.boolean().optional(),
 });
 
-// telegram_users.phone_number ba'zi yozuvlarda "+998..." ba'zilarida "998..." bo'lishi mumkin
-function phoneVariants(phoneDigits: string): string[] {
-  const digits = phoneDigits.replace(/[^\d]/g, "");
-  return [digits, `+${digits}`];
-}
-
-const BOT_USERNAME = "@medilife_account_bot";
-const NOT_REGISTERED_MSG = `Siz hali botdan ro'yxatdan o'tmagansiz. Avval ${BOT_USERNAME} botiga kirib /start bosing va raqamingizni yuboring.`;
-
 export const requestPhoneCode = createServerFn({ method: "POST" })
   .inputValidator((input) => RequestSchema.parse(input))
   .handler(async ({ data }) => {
     const { sha256Hex, syntheticEmail } = await import("./auth-phone.server");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const botUsername = "@medilife_account_bot";
+    const digits = data.phone.replace(/[^\d]/g, "");
+    const canonicalPhone = `+${digits}`;
 
     // 1) Telegram botdan ro'yxatdan o'tganini tekshirish
-    const { data: tgUser } = await supabaseAdmin
+    const { data: tgUser, error: telegramUserError } = await supabaseAdmin
       .from("telegram_users")
       .select("chat_id, first_name, phone_number")
-      .in("phone_number", phoneVariants(data.phone))
+      .in("phone_number", [canonicalPhone, digits])
       .limit(1)
       .maybeSingle();
 
-    if (!tgUser) throw new Error(NOT_REGISTERED_MSG);
+    if (telegramUserError) {
+      console.error("telegram_users lookup failed", telegramUserError.message);
+      return {
+        ok: false as const,
+        reason: "lookup_failed" as const,
+        message: "Ro'yxatdan o'tganlik holatini tekshirib bo'lmadi. Iltimos, qayta urinib ko'ring.",
+      };
+    }
+
+    // Bu kutiladigan holat: exception tashlamaymiz, aks holda sahifa runtime xatosiga tushadi.
+    if (!tgUser) {
+      return {
+        ok: false as const,
+        reason: "not_registered" as const,
+        message: `Siz hali botdan ro'yxatdan o'tmagansiz. Avval ${botUsername} botiga kirib /start bosing va raqamingizni yuboring.`,
+      };
+    }
 
     const email = syntheticEmail(data.phone);
     const { data: list } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 1000 });
@@ -98,7 +108,7 @@ export const requestPhoneCode = createServerFn({ method: "POST" })
     });
     if (!res.ok) {
       console.error("Telegram OTP send failed", res.status, await res.text());
-      throw new Error(`Kod yuborilmadi. ${BOT_USERNAME} botni bloklamaganingizni tekshiring.`);
+      throw new Error(`Kod yuborilmadi. ${botUsername} botni bloklamaganingizni tekshiring.`);
     }
 
     return { ok: true as const, expires_in: 300, first_name: tgUser.first_name ?? null };
@@ -132,10 +142,11 @@ export const verifyPhoneCode = createServerFn({ method: "POST" })
     // Faqat tekshirish (ism kiritish bosqichiga o'tish uchun)
     if (data.consume === false) return { verified: true as const, token_hash: null };
 
+    const digits = data.phone.replace(/[^\d]/g, "");
     const { data: tgUser } = await supabaseAdmin
       .from("telegram_users")
       .select("first_name, last_name")
-      .in("phone_number", phoneVariants(data.phone))
+      .in("phone_number", [`+${digits}`, digits])
       .limit(1)
       .maybeSingle();
 

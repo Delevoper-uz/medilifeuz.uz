@@ -39,6 +39,10 @@ function RegisterPage() {
     setLoading(true);
     try {
       const res = await requestPhoneCode({ data: { phone, mode: "register" } });
+      if (!res.ok) {
+        toast.error(res.message, { duration: 8000 });
+        return;
+      }
       if (res.first_name && !name) setName(res.first_name);
       toast.success("Tasdiqlash kodi yuborildi");
       setStep("code");
@@ -115,7 +119,7 @@ function RegisterPage() {
               <Input
                 value={code}
                 onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 4))}
-                placeholder="123456"
+                placeholder="1234"
                 inputMode="numeric"
                 maxLength={4}
                 className="text-center text-2xl tracking-[0.35em]"
