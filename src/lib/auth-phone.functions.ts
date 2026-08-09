@@ -14,7 +14,7 @@ const RequestSchema = z.object({
 
 const VerifySchema = z.object({
   phone: PhoneSchema,
-  code: z.string().trim().regex(/^\d{6}$/, "Kod 6 xonalik bo'lishi kerak"),
+  code: z.string().trim().regex(/^\d{4}$/, "Kod 4 xonalik bo'lishi kerak"),
   full_name: z.string().trim().min(2).max(100).optional(),
   consume: z.boolean().optional(),
 });
