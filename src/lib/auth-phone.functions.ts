@@ -89,17 +89,12 @@ export const requestPhoneCode = createServerFn({ method: "POST" })
     const token = process.env["TELEGRAM_BOT_TOKEN"];
     if (!token) throw new Error("Telegram bot sozlanmagan. Administratorga murojaat qiling.");
 
-    const text = [
-      "🔐 <b>MediLife — tasdiqlash kodi</b>",
-      `🔢 Kod: <b>${code}</b>`,
-      `📞 ${formatPhoneDisplay(data.phone)}`,
-      "⏱ Kod 5 daqiqa amal qiladi. Uni hech kimga bermang!",
-    ].join("\n");
+    const text = `Medilife saytiga kirish kodingiz: ${code}`;
 
     const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ chat_id: tgUser.chat_id, text, parse_mode: "HTML" }),
+      body: JSON.stringify({ chat_id: tgUser.chat_id, text }),
     });
     if (!res.ok) {
       console.error("Telegram OTP send failed", res.status, await res.text());
