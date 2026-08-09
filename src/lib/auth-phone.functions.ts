@@ -14,7 +14,7 @@ const RequestSchema = z.object({
 
 const VerifySchema = z.object({
   phone: PhoneSchema,
-  code: z.string().trim().regex(/^\d{6}$/, "Kod 6 xonalik bo'lishi kerak"),
+  code: z.string().trim().regex(/^\d{4}$/, "Kod 4 xonalik bo'lishi kerak"),
   full_name: z.string().trim().min(2).max(100).optional(),
   consume: z.boolean().optional(),
 });
@@ -31,7 +31,7 @@ const NOT_REGISTERED_MSG = `Siz hali botdan ro'yxatdan o'tmagansiz. Avval ${BOT_
 export const requestPhoneCode = createServerFn({ method: "POST" })
   .inputValidator((input) => RequestSchema.parse(input))
   .handler(async ({ data }) => {
-    const { sha256Hex, syntheticEmail, formatPhoneDisplay } = await import("./auth-phone.server");
+    const { sha256Hex, syntheticEmail } = await import("./auth-phone.server");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     // 1) Telegram botdan ro'yxatdan o'tganini tekshirish
@@ -69,7 +69,7 @@ export const requestPhoneCode = createServerFn({ method: "POST" })
       }
     }
 
-    const code = String(Math.floor(100000 + Math.random() * 900000));
+    const code = String(Math.floor(1000 + Math.random() * 9000));
     const expires_at = new Date(Date.now() + 5 * 60 * 1000).toISOString();
 
     await supabaseAdmin
@@ -89,17 +89,12 @@ export const requestPhoneCode = createServerFn({ method: "POST" })
     const token = process.env["TELEGRAM_BOT_TOKEN"];
     if (!token) throw new Error("Telegram bot sozlanmagan. Administratorga murojaat qiling.");
 
-    const text = [
-      "🔐 <b>MediLife — tasdiqlash kodi</b>",
-      `🔢 Kod: <b>${code}</b>`,
-      `📞 ${formatPhoneDisplay(data.phone)}`,
-      "⏱ Kod 5 daqiqa amal qiladi. Uni hech kimga bermang!",
-    ].join("\n");
+    const text = `Medilife saytiga kirish kodingiz: ${code}`;
 
     const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ chat_id: tgUser.chat_id, text, parse_mode: "HTML" }),
+      body: JSON.stringify({ chat_id: tgUser.chat_id, text }),
     });
     if (!res.ok) {
       console.error("Telegram OTP send failed", res.status, await res.text());
