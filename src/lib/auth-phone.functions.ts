@@ -31,7 +31,7 @@ const NOT_REGISTERED_MSG = `Siz hali botdan ro'yxatdan o'tmagansiz. Avval ${BOT_
 export const requestPhoneCode = createServerFn({ method: "POST" })
   .inputValidator((input) => RequestSchema.parse(input))
   .handler(async ({ data }) => {
-    const { sha256Hex, syntheticEmail, formatPhoneDisplay } = await import("./auth-phone.server");
+    const { sha256Hex, syntheticEmail } = await import("./auth-phone.server");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     // 1) Telegram botdan ro'yxatdan o'tganini tekshirish
