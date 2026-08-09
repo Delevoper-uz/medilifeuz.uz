@@ -42,14 +42,14 @@ export const Route = createFileRoute("/api/public/telegram/webhook")({
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
         if (message.contact?.phone_number) {
-          const phone = String(message.contact.phone_number).replace(/[^\d]/g, "");
-          if (phone.length !== 12 || !phone.startsWith("998")) {
+          const phoneDigits = String(message.contact.phone_number).replace(/[^\d]/g, "");
+          if (phoneDigits.length !== 12 || !phoneDigits.startsWith("998")) {
             await send(token, { chat_id: chatId, text: "Faqat +998 bilan boshlanadigan raqam qabul qilinadi." });
             return Response.json({ ok: true });
           }
           const { error } = await supabaseAdmin.from("telegram_users").upsert(
             {
-              phone_number: phone,
+              phone_number: `+${phoneDigits}`,
               chat_id: chatId,
               first_name: message.contact.first_name ?? message.from?.first_name ?? null,
               last_name: message.contact.last_name ?? message.from?.last_name ?? null,

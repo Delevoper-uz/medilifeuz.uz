@@ -37,7 +37,11 @@ function LoginPage() {
     if (!isValidPhone(phone)) return toast.error("Telefon raqamni to'liq kiriting");
     setLoading(true);
     try {
-      await requestPhoneCode({ data: { phone, mode: "login" } });
+      const result = await requestPhoneCode({ data: { phone, mode: "login" } });
+      if (!result.ok) {
+        toast.error(result.message, { duration: 8000 });
+        return;
+      }
       toast.success("Tasdiqlash kodi yuborildi");
       setStep("code");
     } catch (err) {
@@ -97,7 +101,7 @@ function LoginPage() {
               <Input
                 value={code}
                 onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 4))}
-                placeholder="123456"
+                placeholder="1234"
                 inputMode="numeric"
                 maxLength={4}
                 className="text-center text-2xl tracking-[0.35em]"
