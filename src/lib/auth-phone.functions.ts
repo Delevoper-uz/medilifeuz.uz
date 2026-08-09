@@ -19,6 +19,11 @@ const VerifySchema = z.object({
   consume: z.boolean().optional(),
 });
 
+// Supabase telegram_users.phone_number may be stored as +998XXXXXXXXX
+function toSupabasePhone(phoneDigits: string): string {
+  return phoneDigits.startsWith("+") ? phoneDigits : `+${phoneDigits}`;
+}
+
 const BOT_USERNAME = "@medilife_account_bot";
 const NOT_REGISTERED_MSG = `Siz hali botdan ro'yxatdan o'tmagansiz. Avval ${BOT_USERNAME} botiga kirib /start bosing va raqamingizni yuboring.`;
 
