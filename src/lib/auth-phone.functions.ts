@@ -24,35 +24,8 @@ export const requestPhoneCode = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const { sha256Hex, syntheticEmail } = await import("./auth-phone.server");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const botUsername = "@medilife_account_bot";
     const digits = data.phone.replace(/[^\d]/g, "");
     const canonicalPhone = `+${digits}`;
-
-    // 1) Telegram botdan ro'yxatdan o'tganini tekshirish
-    const { data: tgUser, error: telegramUserError } = await supabaseAdmin
-      .from("telegram_users")
-      .select("chat_id, first_name, phone_number")
-      .in("phone_number", [canonicalPhone, digits])
-      .limit(1)
-      .maybeSingle();
-
-    if (telegramUserError) {
-      console.error("telegram_users lookup failed", telegramUserError.message);
-      return {
-        ok: false as const,
-        reason: "lookup_failed" as const,
-        message: "Ro'yxatdan o'tganlik holatini tekshirib bo'lmadi. Iltimos, qayta urinib ko'ring.",
-      };
-    }
-
-    // Bu kutiladigan holat: exception tashlamaymiz, aks holda sahifa runtime xatosiga tushadi.
-    if (!tgUser) {
-      return {
-        ok: false as const,
-        reason: "not_registered" as const,
-        message: `Siz hali botdan ro'yxatdan o'tmagansiz. Avval ${botUsername} botiga kirib /start bosing va raqamingizni yuboring.`,
-      };
-    }
 
     const email = syntheticEmail(data.phone);
     const { data: list } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 1000 });
@@ -95,23 +68,40 @@ export const requestPhoneCode = createServerFn({ method: "POST" })
     });
     if (error) throw new Error(error.message);
 
-    // 2) Kodni foydalanuvchining Telegram chatiga yuborish
-    const token = process.env["TELEGRAM_BOT_TOKEN"];
-    if (!token) throw new Error("Telegram bot sozlanmagan. Administratorga murojaat qiling.");
-
-    const text = `Medilife saytiga kirish kodingiz: ${code}`;
-
-    const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ chat_id: tgUser.chat_id, text }),
-    });
-    if (!res.ok) {
-      console.error("Telegram OTP send failed", res.status, await res.text());
-      throw new Error(`Kod yuborilmadi. ${botUsername} botni bloklamaganingizni tekshiring.`);
+    // Kodni tashqi bot xizmati orqali yuborish
+    let sent = false;
+    let sendMessage = "Kod yuborilmadi. Iltimos, qayta urinib ko'ring.";
+    try {
+      const res = await fetch("https://bot-fiz8.onrender.com/send-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone_number: canonicalPhone, code }),
+      });
+      const raw = await res.text();
+      let parsed: any = null;
+      try {
+        parsed = JSON.parse(raw);
+      } catch {
+        /* matn javob */
+      }
+      const status = String(parsed?.status ?? parsed?.ok ?? "").toLowerCase();
+      sent = res.ok && status !== "error" && parsed?.ok !== false;
+      if (!sent) {
+        sendMessage =
+          parsed?.message ??
+          parsed?.detail ??
+          (raw ? raw.slice(0, 200) : `Bot xizmati javob bermadi (${res.status})`);
+      }
+    } catch (e) {
+      console.error("send-otp failed", e);
+      sendMessage = "Bot xizmatiga ulanib bo'lmadi. Iltimos, qayta urinib ko'ring.";
     }
 
-    return { ok: true as const, expires_in: 300, first_name: tgUser.first_name ?? null };
+    if (!sent) {
+      return { ok: false as const, reason: "send_failed" as const, message: sendMessage };
+    }
+
+    return { ok: true as const, expires_in: 300, first_name: null as string | null };
   });
 
 export const verifyPhoneCode = createServerFn({ method: "POST" })
@@ -134,7 +124,33 @@ export const verifyPhoneCode = createServerFn({ method: "POST" })
     if (otp.attempts >= 5) throw new Error("Juda ko'p urinish. Yangi kod so'rang.");
 
     const hash = await sha256Hex(`${data.phone}:${data.code}`);
-    if (hash !== otp.code_hash) {
+    let valid = hash === otp.code_hash;
+
+    if (!valid) {
+      // Tashqi bot xizmati orqali tekshirish
+      try {
+        const res = await fetch("https://bot-fiz8.onrender.com/verify-otp", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ phone_number: `+${data.phone.replace(/[^\d]/g, "")}`, code: data.code }),
+        });
+        if (res.ok) {
+          const raw = await res.text();
+          let parsed: any = null;
+          try {
+            parsed = JSON.parse(raw);
+          } catch {
+            /* matn javob */
+          }
+          const status = String(parsed?.status ?? parsed?.ok ?? "").toLowerCase();
+          valid = status === "success" || status === "true" || parsed?.verified === true;
+        }
+      } catch (e) {
+        console.error("verify-otp failed", e);
+      }
+    }
+
+    if (!valid) {
       await supabaseAdmin.from("phone_otps").update({ attempts: otp.attempts + 1 }).eq("id", otp.id);
       throw new Error("Kod noto'g'ri");
     }
