@@ -69,7 +69,7 @@ export const requestPhoneCode = createServerFn({ method: "POST" })
       }
     }
 
-    const code = String(Math.floor(100000 + Math.random() * 900000));
+    const code = String(Math.floor(1000 + Math.random() * 9000));
     const expires_at = new Date(Date.now() + 5 * 60 * 1000).toISOString();
 
     await supabaseAdmin
