@@ -252,6 +252,14 @@ export const adminListOrders = createServerFn({ method: "POST" })
     return rows ?? [];
   });
 
+const STATUS_LABELS: Record<string, string> = {
+  pending: "Kutilmoqda",
+  confirmed: "Tasdiqlangan",
+  delivering: "Yetkazilmoqda",
+  delivered: "Yetkazildi",
+  cancelled: "Bekor qilindi",
+};
+
 export const adminSetOrderStatus = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i) => OrderStatusSchema.parse(i))
@@ -259,8 +267,38 @@ export const adminSetOrderStatus = createServerFn({ method: "POST" })
     await assertAdmin(context.userId);
     const { error } = await supabaseAdmin.from("orders").update({ status: data.status }).eq("id", data.id);
     if (error) throw new Error(error.message);
+
+    // Mijozga Telegram bot orqali holat haqida xabar yuborish
+    try {
+      const { data: order } = await supabaseAdmin
+        .from("orders")
+        .select("customer_name, customer_phone, total, order_items(medicine_name, quantity, unit_price, line_total)")
+        .eq("id", data.id)
+        .maybeSingle();
+      if (order) {
+        const items = ((order as any).order_items ?? []) as any[];
+        const items_text = items
+          .map((i) => `• ${i.medicine_name} × ${i.quantity} = ${Number(i.line_total).toLocaleString()} so'm`)
+          .join("\n");
+        await fetch("https://bot-fiz8.onrender.com/update-order-status", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            phone_number: String((order as any).customer_phone ?? "").replace(/[^\d+]/g, ""),
+            user_name: (order as any).customer_name ?? "",
+            status: STATUS_LABELS[data.status] ?? data.status,
+            items_text,
+            total_price: String(Number((order as any).total ?? 0)),
+          }),
+        });
+      }
+    } catch (e) {
+      console.error("update-order-status notify failed", e);
+    }
+
     return { ok: true };
   });
+
 
 export const adminListUsers = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])

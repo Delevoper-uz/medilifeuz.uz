@@ -15,6 +15,8 @@ import { Footer } from "@/components/Footer";
 import { AuthProvider } from "@/hooks/use-auth";
 import { CartProvider } from "@/hooks/use-cart";
 import { Toaster } from "@/components/ui/sonner";
+import { PresenceTracker } from "@/components/PresenceTracker";
+
 import "@/lib/i18n";
 
 function NotFoundComponent() {
@@ -105,7 +107,9 @@ function RootComponent() {
             </main>
             <Footer />
           </div>
+          <PresenceTracker />
           <Toaster position="top-right" richColors />
+
         </CartProvider>
       </AuthProvider>
     </QueryClientProvider>

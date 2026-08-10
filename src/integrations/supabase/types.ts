@@ -346,6 +346,39 @@ export type Database = {
         }
         Relationships: []
       }
+      user_presence: {
+        Row: {
+          activity: string
+          created_at: string
+          full_name: string | null
+          last_seen_at: string
+          path: string
+          phone_number: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          activity?: string
+          created_at?: string
+          full_name?: string | null
+          last_seen_at?: string
+          path?: string
+          phone_number?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          activity?: string
+          created_at?: string
+          full_name?: string | null
+          last_seen_at?: string
+          path?: string
+          phone_number?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string

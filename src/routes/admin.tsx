@@ -34,6 +34,7 @@ import {
   adminUpdateUser,
   adminUploadMedia,
 } from "@/lib/admin.functions";
+import { adminListPresence } from "@/lib/presence.functions";
 import * as XLSX from "xlsx";
 import { matchesSearch } from "@/lib/search";
 
@@ -75,12 +76,14 @@ function AdminPage() {
           <TabsTrigger value="branches">Filiallar</TabsTrigger>
           <TabsTrigger value="orders">Buyurtmalar</TabsTrigger>
           <TabsTrigger value="users">Foydalanuvchilar</TabsTrigger>
+          <TabsTrigger value="activity">Foydalanuvchilar Faoliyati</TabsTrigger>
         </TabsList>
         <TabsContent value="news" className="mt-6"><NewsAdmin /></TabsContent>
         <TabsContent value="medicines" className="mt-6"><MedicinesAdmin /></TabsContent>
         <TabsContent value="branches" className="mt-6"><BranchesAdmin /></TabsContent>
         <TabsContent value="orders" className="mt-6"><OrdersAdmin /></TabsContent>
         <TabsContent value="users" className="mt-6"><UsersAdmin /></TabsContent>
+        <TabsContent value="activity" className="mt-6"><ActivityAdmin /></TabsContent>
       </Tabs>
     </div>
   );
@@ -422,6 +425,44 @@ function OrdersAdmin() {
   );
 }
 
+
+/* ---------------- LIVE ACTIVITY ---------------- */
+function ActivityAdmin() {
+  const listFn = useServerFn(adminListPresence);
+  const { data = [], isLoading } = useQuery({
+    queryKey: ["admin-presence"],
+    queryFn: () => listFn({ data: {} }),
+    refetchInterval: 15_000,
+  });
+
+  if (isLoading) return <p className="text-muted-foreground">Yuklanmoqda...</p>;
+  if (data.length === 0) return <p className="text-muted-foreground">Hozircha faoliyat yo'q</p>;
+
+  return (
+    <div className="space-y-2">
+      {data.map((r: any) => {
+        const last = new Date(r.last_seen_at);
+        const active = Date.now() - last.getTime() < 5 * 60 * 1000;
+        return (
+          <Card key={r.user_id} className="p-4 flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <p className="font-medium truncate">{r.full_name || "Ismi yo'q"}</p>
+              <p className="text-xs text-muted-foreground">{r.phone_number || "Telefon yo'q"}</p>
+              <p className="text-sm mt-1 truncate">{r.activity || r.path}</p>
+            </div>
+            <div className="text-right shrink-0">
+              <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${active ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}>
+                <span className={`h-2 w-2 rounded-full ${active ? "bg-primary" : "bg-muted-foreground"}`} />
+                {active ? "Aktiv" : "Noaktiv"}
+              </span>
+              <p className="text-xs text-muted-foreground mt-1">{last.toLocaleString()}</p>
+            </div>
+          </Card>
+        );
+      })}
+    </div>
+  );
+}
 
 /* ---------------- USERS ---------------- */
 function UsersAdmin() {
