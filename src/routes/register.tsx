@@ -40,7 +40,7 @@ function RegisterPage() {
     try {
       const res = await requestPhoneCode({ data: { phone, mode: "register" } });
       if (!res.ok) {
-        toast.error(res.message, { duration: 8000 });
+        toast.error(`${res.message} Ro'yxatdan o'tish: https://t.me/medilife_account_bot`, { duration: 10000 });
         return;
       }
       if (res.first_name && !name) setName(res.first_name);
@@ -55,10 +55,12 @@ function RegisterPage() {
 
   const checkCode = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (code.length !== 4) return toast.error("4 xonalik kodni kiriting");
+    const entered = String(code).trim().replace(/\D/g, "");
+    if (entered.length !== 4) return toast.error("4 xonalik kodni kiriting");
     setLoading(true);
     try {
-      await verifyPhoneCode({ data: { phone, code, consume: false } });
+      await verifyPhoneCode({ data: { phone, code: entered, consume: false } });
+      setCode(entered);
       setStep("name");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Kod noto'g'ri");
@@ -72,7 +74,9 @@ function RegisterPage() {
     if (name.trim().length < 2) return toast.error("Ismni kiriting");
     setLoading(true);
     try {
-      const res = await verifyPhoneCode({ data: { phone, code, full_name: name.trim() } });
+      const res = await verifyPhoneCode({
+        data: { phone, code: String(code).trim().replace(/\D/g, ""), full_name: name.trim() },
+      });
       if (!res.token_hash) throw new Error("Sessiya yaratilmadi");
       const { error } = await supabase.auth.verifyOtp({ token_hash: res.token_hash, type: "email" });
       if (error) throw new Error(error.message);
@@ -150,6 +154,12 @@ function RegisterPage() {
         <p className="text-sm text-center mt-4 text-muted-foreground">
           Akkauntingiz bormi? <Link to="/login" className="text-primary font-medium">{t("auth.login")}</Link>
         </p>
+
+        <Button asChild variant="outline" className="w-full mt-3">
+          <a href="https://t.me/medilife_account_bot" target="_blank" rel="noopener noreferrer">
+            🤖 Telegram bot orqali ro'yxatdan o'tish
+          </a>
+        </Button>
       </Card>
     </div>
   );
