@@ -53,17 +53,25 @@ function LoginPage() {
 
   const verify = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (code.length !== 4) return toast.error("4 xonalik kodni kiriting");
+    const entered = String(code).trim().replace(/\D/g, "");
+    if (entered.length !== 4) return toast.error("4 xonalik kodni kiriting");
     setLoading(true);
     try {
-      const res = await verifyPhoneCode({ data: { phone, code } });
+      const res = await verifyPhoneCode({ data: { phone, code: entered } });
       if (!res.token_hash) throw new Error("Sessiya yaratilmadi");
       const { error } = await supabase.auth.verifyOtp({ token_hash: res.token_hash, type: "email" });
       if (error) throw new Error(error.message);
       toast.success(t("auth.success_login"));
       navigate({ to: "/" });
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Kod noto'g'ri");
+      const msg = err instanceof Error ? err.message : "Kod noto'g'ri";
+      if (/topilmadi|ro'yxatdan|royxatdan/i.test(msg)) {
+        toast.error(`${msg} — @medilife_account_bot orqali ro'yxatdan o'ting: https://t.me/medilife_account_bot`, {
+          duration: 10000,
+        });
+      } else {
+        toast.error(msg);
+      }
     } finally {
       setLoading(false);
     }
