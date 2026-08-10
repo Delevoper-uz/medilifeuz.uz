@@ -55,10 +55,12 @@ function RegisterPage() {
 
   const checkCode = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (code.length !== 4) return toast.error("4 xonalik kodni kiriting");
+    const entered = String(code).trim().replace(/\D/g, "");
+    if (entered.length !== 4) return toast.error("4 xonalik kodni kiriting");
     setLoading(true);
     try {
-      await verifyPhoneCode({ data: { phone, code, consume: false } });
+      await verifyPhoneCode({ data: { phone, code: entered, consume: false } });
+      setCode(entered);
       setStep("name");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Kod noto'g'ri");
