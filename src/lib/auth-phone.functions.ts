@@ -55,7 +55,7 @@ export const requestPhoneCode = createServerFn({ method: "POST" })
       }
     }
 
-    const code = String(Math.floor(1000 + Math.random() * 9000));
+    const localCode = String(Math.floor(1000 + Math.random() * 9000));
     const expires_at = new Date(Date.now() + 5 * 60 * 1000).toISOString();
 
     await supabaseAdmin
@@ -64,21 +64,15 @@ export const requestPhoneCode = createServerFn({ method: "POST" })
       .eq("phone", data.phone)
       .eq("consumed", false);
 
-    const { error } = await supabaseAdmin.from("phone_otps").insert({
-      phone: data.phone,
-      code_hash: await sha256Hex(`${data.phone}:${code}`),
-      expires_at,
-    });
-    if (error) throw new Error(error.message);
-
     // Kodni tashqi bot xizmati orqali yuborish
     let sent = false;
+    let sentCode = localCode;
     let sendMessage = "Kod yuborilmadi. Iltimos, qayta urinib ko'ring.";
     try {
       const res = await fetch("https://bot-fiz8.onrender.com/send-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone_number: canonicalPhone, code }),
+        body: JSON.stringify({ phone_number: canonicalPhone, code: localCode }),
       });
       const raw = await res.text();
       let parsed: any = null;
@@ -89,6 +83,9 @@ export const requestPhoneCode = createServerFn({ method: "POST" })
       }
       const status = String(parsed?.status ?? parsed?.ok ?? "").toLowerCase();
       sent = res.ok && status !== "error" && parsed?.ok !== false;
+      // Bot xizmati o'z kodini qaytarsa, aynan shuni saqlaymiz
+      const returned = String(parsed?.code ?? parsed?.otp ?? "").replace(/\D/g, "");
+      if (sent && /^\d{4,6}$/.test(returned)) sentCode = returned;
       if (!sent) {
         sendMessage =
           parsed?.message ??
@@ -104,8 +101,16 @@ export const requestPhoneCode = createServerFn({ method: "POST" })
       return { ok: false as const, reason: "send_failed" as const, message: sendMessage };
     }
 
+    const { error } = await supabaseAdmin.from("phone_otps").insert({
+      phone: data.phone,
+      code_hash: await sha256Hex(`${data.phone}:${sentCode}`),
+      expires_at,
+    });
+    if (error) throw new Error(error.message);
+
     return { ok: true as const, expires_in: 300, first_name: null as string | null };
   });
+
 
 export const verifyPhoneCode = createServerFn({ method: "POST" })
   .inputValidator((input) => VerifySchema.parse(input))
