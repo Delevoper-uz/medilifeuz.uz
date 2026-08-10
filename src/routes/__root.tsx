@@ -105,7 +105,9 @@ function RootComponent() {
             </main>
             <Footer />
           </div>
+          <PresenceTracker />
           <Toaster position="top-right" richColors />
+
         </CartProvider>
       </AuthProvider>
     </QueryClientProvider>
