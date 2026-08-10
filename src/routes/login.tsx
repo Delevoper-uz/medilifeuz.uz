@@ -39,7 +39,10 @@ function LoginPage() {
     try {
       const result = await requestPhoneCode({ data: { phone, mode: "login" } });
       if (!result.ok) {
-        toast.error(result.message, { duration: 8000 });
+        toast.error(
+          `${result.message} Ro'yxatdan o'tish: https://t.me/medilife_account_bot`,
+          { duration: 10000 },
+        );
         return;
       }
       toast.success("Tasdiqlash kodi yuborildi");
