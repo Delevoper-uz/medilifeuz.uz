@@ -17,7 +17,7 @@ const VerifySchema = z.object({
   code: z
     .union([z.string(), z.number()])
     .transform((v) => String(v).trim().replace(/\D/g, ""))
-    .refine((v) => /^\d{4}$/.test(v), "Kod 4 xonalik bo'lishi kerak"),
+    .refine((v) => /^\d{4,6}$/.test(v), "Kod 4 xonalik bo'lishi kerak"),
   full_name: z.string().trim().min(2).max(100).optional(),
   consume: z.boolean().optional(),
 });
