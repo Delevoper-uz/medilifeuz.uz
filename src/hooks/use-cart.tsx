@@ -28,9 +28,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     try {
       const raw = localStorage.getItem(KEY);
-      if (raw) setItems(JSON.parse(raw));
+      if (raw) {
+        const parsed = JSON.parse(raw) as CartItem[];
+        // Paket to'lovi kabi mahsulot bo'lmagan yozuvlarni chiqarib tashlash
+        setItems(parsed.filter((x) => !/^0*\s*paket/i.test((x.name ?? "").trim())));
+      }
     } catch {}
   }, []);
+
 
   useEffect(() => {
     localStorage.setItem(KEY, JSON.stringify(items));
