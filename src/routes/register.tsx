@@ -74,7 +74,9 @@ function RegisterPage() {
     if (name.trim().length < 2) return toast.error("Ismni kiriting");
     setLoading(true);
     try {
-      const res = await verifyPhoneCode({ data: { phone, code, full_name: name.trim() } });
+      const res = await verifyPhoneCode({
+        data: { phone, code: String(code).trim().replace(/\D/g, ""), full_name: name.trim() },
+      });
       if (!res.token_hash) throw new Error("Sessiya yaratilmadi");
       const { error } = await supabase.auth.verifyOtp({ token_hash: res.token_hash, type: "email" });
       if (error) throw new Error(error.message);
