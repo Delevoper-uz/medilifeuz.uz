@@ -154,6 +154,12 @@ function RegisterPage() {
         <p className="text-sm text-center mt-4 text-muted-foreground">
           Akkauntingiz bormi? <Link to="/login" className="text-primary font-medium">{t("auth.login")}</Link>
         </p>
+
+        <Button asChild variant="outline" className="w-full mt-3">
+          <a href="https://t.me/medilife_account_bot" target="_blank" rel="noopener noreferrer">
+            🤖 Telegram bot orqali ro'yxatdan o'tish
+          </a>
+        </Button>
       </Card>
     </div>
   );
