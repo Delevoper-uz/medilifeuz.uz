@@ -35,7 +35,6 @@ function LoginPage() {
   const sendCode = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isValidPhone(phone)) return toast.error("Telefon raqamni to'liq kiriting");
-    window.open("https://t.me/medilife_account_bot", "_blank", "noopener,noreferrer");
     setLoading(true);
     try {
       const result = await requestPhoneCode({ data: { phone, mode: "login" } });
