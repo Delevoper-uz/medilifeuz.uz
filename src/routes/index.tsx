@@ -112,12 +112,6 @@ function Home() {
         </div>
       </section>
 
-      {/* News */}
-      <section id="yangiliklar">
-        <h2 className="text-3xl font-bold mb-6">{t("home.news_title")}</h2>
-        {newsLoading ? <p className="text-muted-foreground">{t("common.loading")}</p> : news.length > 0 ? <NewsCarousel items={news} /> : <p className="text-muted-foreground">{t("news.empty")}</p>}
-      </section>
-
       {/* Medicines */}
       <section id="dorilar">
         <div className="flex items-end justify-between mb-6">
@@ -134,6 +128,13 @@ function Home() {
           <p className="text-muted-foreground">{t("medicines.empty")}</p>
         )}
       </section>
+
+      {/* News */}
+      <section id="yangiliklar">
+        <h2 className="text-3xl font-bold mb-6">{t("home.news_title")}</h2>
+        {newsLoading ? <p className="text-muted-foreground">{t("common.loading")}</p> : news.length > 0 ? <NewsCarousel items={news} /> : <p className="text-muted-foreground">{t("news.empty")}</p>}
+      </section>
+
 
       {/* About */}
       <section id="about" className="rounded-2xl gradient-primary p-8 md:p-12 text-primary-foreground">
