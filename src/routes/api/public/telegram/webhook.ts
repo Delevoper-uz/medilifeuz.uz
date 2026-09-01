@@ -39,7 +39,28 @@ export const Route = createFileRoute("/api/public/telegram/webhook")({
         const chatId = message?.chat?.id;
         if (!chatId) return Response.json({ ok: true });
 
+        // Guruhga matn yozilsa — matndagi dorilarni bazadan izlab javob qaytaramiz.
+        const chatType: string = message?.chat?.type ?? "private";
+        const text: string = message?.text ?? message?.caption ?? "";
+        if (chatType.includes("group") && text && !text.startsWith("/")) {
+          const { extractCandidateNames, lookupMedicines } = await import("@/lib/ai-search.functions");
+          const names = extractCandidateNames(text);
+          if (!names.length) return Response.json({ ok: true });
+          const { found, missing } = await lookupMedicines(names);
+          const lines = found
+            .slice(0, 40)
+            .map((m, i) => `${i + 1}. ${m.name}${m.name_cyrl ? ` (${m.name_cyrl})` : ""} — ${m.price} so'm`);
+          const reply = found.length
+            ? `🔎 Topilgan dorilar (${found.length}):\n${lines.join("\n")}${
+                missing.length ? `\n\n❌ Topilmadi: ${missing.slice(0, 20).join(", ")}` : ""
+              }`
+            : `❌ Bu matndagi dorilar bazada topilmadi: ${names.slice(0, 20).join(", ")}`;
+          await send(token, { chat_id: chatId, text: reply });
+          return Response.json({ ok: true });
+        }
+
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
 
         if (message.contact?.phone_number) {
           const phoneDigits = String(message.contact.phone_number).replace(/[^\d]/g, "");
