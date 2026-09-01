@@ -4,8 +4,10 @@ import { useTranslation } from "react-i18next";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { MedicineCard, type Medicine } from "@/components/MedicineCard";
+import { AiListSearch } from "@/components/AiListSearch";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
 
 export const Route = createFileRoute("/dorilar")({
   component: MedicinesPage,
