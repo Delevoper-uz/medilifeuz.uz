@@ -4,8 +4,10 @@ import { useTranslation } from "react-i18next";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { MedicineCard, type Medicine } from "@/components/MedicineCard";
+import { AiListSearch } from "@/components/AiListSearch";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
 
 export const Route = createFileRoute("/dorilar")({
   component: MedicinesPage,
@@ -89,6 +91,8 @@ function MedicinesPage() {
         <h1 className="text-4xl font-bold">{t("medicines.title")}</h1>
         <Input placeholder={t("common.search")} value={q} onChange={(e) => setQ(e.target.value)} className="max-w-xs" />
       </div>
+      <AiListSearch />
+
       <div className="flex flex-wrap items-center gap-2 mb-6 p-3 rounded-lg border bg-card">
         <span className="text-sm font-medium">Narx:</span>
         <Input type="number" placeholder="1 000" value={minPrice} onChange={(e) => setMinPrice(e.target.value)} className="w-28" />
