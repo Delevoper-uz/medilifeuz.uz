@@ -10,7 +10,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Minus, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useCart } from "@/hooks/use-cart";
-import { useAuth } from "@/hooks/use-auth";
 import { formatPhone, isValidPhone } from "@/lib/phone";
 import { placeOrder } from "@/lib/orders.functions";
 import { YandexAddressPicker } from "@/components/YandexAddressPicker";
@@ -32,10 +31,13 @@ function formatNamanganTime(d: Date): string {
 
 type AddrMethod = "text" | "yandex";
 
+/** To'lov uchun karta raqami (admin bergan raqam). */
+const PAYMENT_CARD = "8600 0000 0000 0000";
+const PAYMENT_CARD_OWNER = "MediLife";
+
 function CartPage() {
   const { t } = useTranslation();
   const { items, add, remove, setQty, clear, total, count } = useCart();
-  const { user } = useAuth();
   const navigate = useNavigate();
 
   const [now, setNow] = useState(new Date());
@@ -53,12 +55,8 @@ function CartPage() {
   const [addressYandex, setAddressYandex] = useState("");
   const [addressYandexUrl, setAddressYandexUrl] = useState<string | undefined>();
   const [note, setNote] = useState("");
+  const [paid, setPaid] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-
-  useEffect(() => {
-    if (user?.user_metadata?.full_name) setName(user.user_metadata.full_name as string);
-    if (user?.phone) setPhone(formatPhone(user.phone));
-  }, [user]);
 
   useEffect(() => {
     if (items.length === 0 && tab === "checkout") setTab("cart");
@@ -70,11 +68,6 @@ function CartPage() {
   const goCheckout = () => { if (!isEmpty) setTab("checkout"); };
 
   const submit = async () => {
-    if (!user) {
-      toast.error("Avval tizimga kiring");
-      navigate({ to: "/login" });
-      return;
-    }
     if (!name.trim()) return toast.error("Ismni kiriting");
     if (!isValidPhone(phone)) return toast.error(t("auth.phone_invalid"));
 
@@ -100,12 +93,14 @@ function CartPage() {
           address: finalAddress,
           map_url: mapUrl ?? null,
           note: note || null,
+          paid,
           items: items.map((i) => ({ medicine_id: i.id, quantity: i.quantity })),
         },
       });
       toast.success(`${t("cart.submitted")} #${res.orderId.slice(0, 8)}`);
       clear();
-      navigate({ to: "/buyurtmalarim" });
+      setPaid(false);
+      navigate({ to: "/" });
     } catch (e: any) {
       toast.error(e.message ?? "Xatolik");
     } finally {
@@ -238,7 +233,20 @@ function CartPage() {
                 <div className="flex justify-between text-lg font-bold pt-2 border-t"><span>{t("cart.total")}</span><span>{grand.toLocaleString()} {t("common.sum")}</span></div>
               </div>
 
-              <Button onClick={submit} disabled={submitting} size="lg" className="w-full">
+              <div className="border-t pt-4 space-y-2">
+                <Label>💳 To'lov</Label>
+                <div className="rounded-lg border bg-muted/40 p-3 space-y-1 text-sm">
+                  <div>Karta raqami: <span className="font-semibold tracking-wider">{PAYMENT_CARD}</span></div>
+                  <div className="text-muted-foreground">Karta egasi: {PAYMENT_CARD_OWNER}</div>
+                  <div className="font-semibold text-primary">To'lov summasi: {grand.toLocaleString()} {t("common.sum")}</div>
+                </div>
+                <label className="flex items-start gap-2 text-sm cursor-pointer">
+                  <input type="checkbox" className="mt-1" checked={paid} onChange={(e) => setPaid(e.target.checked)} />
+                  <span>Summani yuqoridagi kartaga o'tkazdim va buyurtmani tasdiqlayman</span>
+                </label>
+              </div>
+
+              <Button onClick={submit} disabled={submitting || !paid} size="lg" className="w-full">
                 {submitting ? t("common.loading") : t("common.confirm")}
               </Button>
             </Card>
