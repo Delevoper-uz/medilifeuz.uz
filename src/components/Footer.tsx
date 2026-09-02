@@ -2,26 +2,15 @@ import { useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import { Phone, Mail, MapPin } from "lucide-react";
 import logo from "@/assets/medilife-logo.jpg";
-import { toast } from "sonner";
-import { useAuth } from "@/hooks/use-auth";
 
 export function Footer() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { isAdmin, user } = useAuth();
 
   const openAdmin = () => {
-    if (!user) {
-      toast.error("Avval tizimga kiring");
-      navigate({ to: "/login" });
-      return;
-    }
-    if (!isAdmin) {
-      toast.error("Sizda admin huquqi yo'q");
-      return;
-    }
     navigate({ to: "/admin" });
   };
+
 
 
   return (
