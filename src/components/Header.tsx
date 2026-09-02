@@ -1,6 +1,6 @@
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
-import { Moon, Sun, ShoppingCart, User as UserIcon, LogOut, Shield } from "lucide-react";
+import { Moon, Sun, ShoppingCart } from "lucide-react";
 import logo from "@/assets/medilife-logo.jpg";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -8,30 +8,20 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useCart } from "@/hooks/use-cart";
-import { useAuth } from "@/hooks/use-auth";
 import { useTheme } from "@/hooks/use-theme";
 import i18n from "@/lib/i18n";
-import { supabase } from "@/integrations/supabase/client";
 
 export function Header() {
   const { t } = useTranslation();
   const { count } = useCart();
-  const { user, fullName } = useAuth();
   const { theme, toggle } = useTheme();
-  const navigate = useNavigate();
 
   const changeLang = (lng: string) => {
     i18n.changeLanguage(lng);
     localStorage.setItem("medilife-lang", lng);
-  };
-
-  const logout = async () => {
-    await supabase.auth.signOut();
-    navigate({ to: "/" });
   };
 
   const linkCls = "px-3 py-2 rounded-md text-sm font-medium hover:bg-accent transition-colors";
@@ -46,13 +36,12 @@ export function Header() {
 
         <nav className="hidden md:flex items-center gap-1 mx-auto">
           <Link to="/" className={linkCls} activeProps={{ className: linkCls + " text-primary" }} activeOptions={{ exact: true }}>{t("nav.home")}</Link>
-          <Link to="/yangiliklar" className={linkCls} activeProps={{ className: linkCls + " text-primary" }}>{t("nav.news")}</Link>
           <Link to="/dorilar" className={linkCls} activeProps={{ className: linkCls + " text-primary" }}>{t("nav.medicines")}</Link>
+          <Link to="/yangiliklar" className={linkCls} activeProps={{ className: linkCls + " text-primary" }}>{t("nav.news")}</Link>
           <Link to="/filiallar" className={linkCls} activeProps={{ className: linkCls + " text-primary" }}>{t("nav.branches")}</Link>
         </nav>
 
         <div className="flex items-center gap-1">
-
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="sm" className="font-semibold uppercase">
@@ -79,46 +68,14 @@ export function Header() {
               )}
             </Button>
           </Link>
-
-          {user ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="gap-2">
-                  <UserIcon className="h-5 w-5" />
-                  <span className="hidden sm:inline max-w-28 truncate">{fullName ?? t("nav.profile")}</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => navigate({ to: "/profil" })}>
-                  <UserIcon className="h-4 w-4 mr-2" /> {t("nav.profile")}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate({ to: "/buyurtmalarim" })}>
-                  {t("nav.orders")}
-                </DropdownMenuItem>
-                {typeof window !== "undefined" && localStorage.getItem("medilife-admin-unlock-v1") === "1" && (
-                  <DropdownMenuItem onClick={() => navigate({ to: "/admin" })}>
-                    <Shield className="h-4 w-4 mr-2" /> Admin
-                  </DropdownMenuItem>
-                )}
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={logout}>
-                  <LogOut className="h-4 w-4 mr-2" /> {t("auth.logout")}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          ) : (
-            <Link to="/login">
-              <Button variant="default" size="sm">{t("auth.login")}</Button>
-            </Link>
-          )}
         </div>
       </div>
 
       {/* Mobile nav */}
       <nav className="md:hidden flex items-center justify-center gap-1 pb-2 px-2 overflow-x-auto">
         <Link to="/" className={linkCls} activeProps={{ className: linkCls + " text-primary" }} activeOptions={{ exact: true }}>{t("nav.home")}</Link>
-        <Link to="/yangiliklar" className={linkCls} activeProps={{ className: linkCls + " text-primary" }}>{t("nav.news")}</Link>
         <Link to="/dorilar" className={linkCls} activeProps={{ className: linkCls + " text-primary" }}>{t("nav.medicines")}</Link>
+        <Link to="/yangiliklar" className={linkCls} activeProps={{ className: linkCls + " text-primary" }}>{t("nav.news")}</Link>
         <Link to="/filiallar" className={linkCls} activeProps={{ className: linkCls + " text-primary" }}>{t("nav.branches")}</Link>
       </nav>
     </header>
