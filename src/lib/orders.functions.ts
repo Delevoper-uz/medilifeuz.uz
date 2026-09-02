@@ -14,14 +14,14 @@ const PlaceOrderSchema = z.object({
   address: z.string().trim().min(1).max(600),
   map_url: z.string().url().max(500).optional().nullable(),
   note: z.string().max(500).optional().nullable(),
+  paid: z.boolean().optional(),
   items: z.array(OrderItemSchema).min(1).max(50),
 });
 
 export const placeOrder = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
   .inputValidator((input) => PlaceOrderSchema.parse(input))
-  .handler(async ({ data, context }) => {
-    const user_id = context.userId;
+  .handler(async ({ data }) => {
+    const user_id = null;
     const delivery_type = "courier";
     const delivery_fee = 0; // shahar bo'ylab bepul
 
@@ -86,6 +86,7 @@ export const placeOrder = createServerFn({ method: "POST" })
         `🚚 Yetkazib berish (shahar bo'ylab bepul)`,
         `📍 ${data.address}`,
       ];
+      lines.push(`💳 To'lov: ${data.paid ? "karta orqali to'landi (mijoz tasdiqladi)" : "tasdiqlanmagan"}`);
       if (data.map_url) lines.push(`🗺 <a href="${data.map_url}">Xaritada ko'rish</a>`);
       lines.push(
         "",

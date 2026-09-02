@@ -6,6 +6,7 @@ import { ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { MedicineCard, type Medicine } from "@/components/MedicineCard";
 import { Button } from "@/components/ui/button";
+import { AiListSearch } from "@/components/AiListSearch";
 import logo from "@/assets/medilife-logo.jpg";
 
 export const Route = createFileRoute("/")({
@@ -118,6 +119,7 @@ function Home() {
           <h2 className="text-3xl font-bold">{t("home.medicines_title")}</h2>
           <Link to="/dorilar"><Button variant="ghost" className="gap-1">{t("common.search")} <ArrowRight className="h-4 w-4" /></Button></Link>
         </div>
+        <AiListSearch />
         {medsLoading ? (
           <p className="text-muted-foreground">{t("common.loading")}</p>
         ) : medicines.length > 0 ? (

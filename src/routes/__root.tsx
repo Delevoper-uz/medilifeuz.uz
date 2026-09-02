@@ -7,7 +7,8 @@ import {
   Scripts,
   Link,
 } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
 
 import appCss from "../styles.css?url";
 import { Header } from "@/components/Header";
@@ -94,6 +95,21 @@ function RootShell({ children }: { children: React.ReactNode }) {
   );
 }
 
+function AdminHotkey() {
+  const navigate = useNavigate();
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.altKey && e.shiftKey && (e.key === "A" || e.key === "a" || e.code === "KeyA")) {
+        e.preventDefault();
+        navigate({ to: "/admin" });
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [navigate]);
+  return null;
+}
+
 function RootComponent() {
   const [queryClient] = useState(() => new QueryClient());
   return (
@@ -108,6 +124,7 @@ function RootComponent() {
             <Footer />
           </div>
           <PresenceTracker />
+          <AdminHotkey />
           <Toaster position="top-right" richColors />
 
         </CartProvider>

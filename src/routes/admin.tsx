@@ -56,7 +56,10 @@ function AdminPage() {
       <div className="container mx-auto px-4 py-20 text-center space-y-4">
         <h1 className="text-2xl font-semibold">Admin panel yopiq</h1>
         <p className="text-muted-foreground">Bu sahifa faqat administratorlar uchun.</p>
-        <Button onClick={() => navigate({ to: "/" })}>Bosh sahifaga qaytish</Button>
+        <div className="flex justify-center gap-2">
+          {!user && <Button onClick={() => navigate({ to: "/login" })}>Admin sifatida kirish</Button>}
+          <Button variant="outline" onClick={() => navigate({ to: "/" })}>Bosh sahifaga qaytish</Button>
+        </div>
       </div>
     );
   }

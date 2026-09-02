@@ -11,12 +11,9 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as YangiliklarRouteImport } from './routes/yangiliklar'
 import { Route as SavatchaRouteImport } from './routes/savatcha'
-import { Route as RegisterRouteImport } from './routes/register'
-import { Route as ProfilRouteImport } from './routes/profil'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as FiliallarRouteImport } from './routes/filiallar'
 import { Route as DorilarRouteImport } from './routes/dorilar'
-import { Route as BuyurtmalarimRouteImport } from './routes/buyurtmalarim'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiPublicTelegramWebhookRouteImport } from './routes/api/public/telegram/webhook'
@@ -29,16 +26,6 @@ const YangiliklarRoute = YangiliklarRouteImport.update({
 const SavatchaRoute = SavatchaRouteImport.update({
   id: '/savatcha',
   path: '/savatcha',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const RegisterRoute = RegisterRouteImport.update({
-  id: '/register',
-  path: '/register',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ProfilRoute = ProfilRouteImport.update({
-  id: '/profil',
-  path: '/profil',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -54,11 +41,6 @@ const FiliallarRoute = FiliallarRouteImport.update({
 const DorilarRoute = DorilarRouteImport.update({
   id: '/dorilar',
   path: '/dorilar',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const BuyurtmalarimRoute = BuyurtmalarimRouteImport.update({
-  id: '/buyurtmalarim',
-  path: '/buyurtmalarim',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRoute = AdminRouteImport.update({
@@ -81,12 +63,9 @@ const ApiPublicTelegramWebhookRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
-  '/buyurtmalarim': typeof BuyurtmalarimRoute
   '/dorilar': typeof DorilarRoute
   '/filiallar': typeof FiliallarRoute
   '/login': typeof LoginRoute
-  '/profil': typeof ProfilRoute
-  '/register': typeof RegisterRoute
   '/savatcha': typeof SavatchaRoute
   '/yangiliklar': typeof YangiliklarRoute
   '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
@@ -94,12 +73,9 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
-  '/buyurtmalarim': typeof BuyurtmalarimRoute
   '/dorilar': typeof DorilarRoute
   '/filiallar': typeof FiliallarRoute
   '/login': typeof LoginRoute
-  '/profil': typeof ProfilRoute
-  '/register': typeof RegisterRoute
   '/savatcha': typeof SavatchaRoute
   '/yangiliklar': typeof YangiliklarRoute
   '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
@@ -108,12 +84,9 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
-  '/buyurtmalarim': typeof BuyurtmalarimRoute
   '/dorilar': typeof DorilarRoute
   '/filiallar': typeof FiliallarRoute
   '/login': typeof LoginRoute
-  '/profil': typeof ProfilRoute
-  '/register': typeof RegisterRoute
   '/savatcha': typeof SavatchaRoute
   '/yangiliklar': typeof YangiliklarRoute
   '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
@@ -123,12 +96,9 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
-    | '/buyurtmalarim'
     | '/dorilar'
     | '/filiallar'
     | '/login'
-    | '/profil'
-    | '/register'
     | '/savatcha'
     | '/yangiliklar'
     | '/api/public/telegram/webhook'
@@ -136,12 +106,9 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/admin'
-    | '/buyurtmalarim'
     | '/dorilar'
     | '/filiallar'
     | '/login'
-    | '/profil'
-    | '/register'
     | '/savatcha'
     | '/yangiliklar'
     | '/api/public/telegram/webhook'
@@ -149,12 +116,9 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/admin'
-    | '/buyurtmalarim'
     | '/dorilar'
     | '/filiallar'
     | '/login'
-    | '/profil'
-    | '/register'
     | '/savatcha'
     | '/yangiliklar'
     | '/api/public/telegram/webhook'
@@ -163,12 +127,9 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
-  BuyurtmalarimRoute: typeof BuyurtmalarimRoute
   DorilarRoute: typeof DorilarRoute
   FiliallarRoute: typeof FiliallarRoute
   LoginRoute: typeof LoginRoute
-  ProfilRoute: typeof ProfilRoute
-  RegisterRoute: typeof RegisterRoute
   SavatchaRoute: typeof SavatchaRoute
   YangiliklarRoute: typeof YangiliklarRoute
   ApiPublicTelegramWebhookRoute: typeof ApiPublicTelegramWebhookRoute
@@ -190,20 +151,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SavatchaRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/register': {
-      id: '/register'
-      path: '/register'
-      fullPath: '/register'
-      preLoaderRoute: typeof RegisterRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/profil': {
-      id: '/profil'
-      path: '/profil'
-      fullPath: '/profil'
-      preLoaderRoute: typeof ProfilRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/login': {
       id: '/login'
       path: '/login'
@@ -223,13 +170,6 @@ declare module '@tanstack/react-router' {
       path: '/dorilar'
       fullPath: '/dorilar'
       preLoaderRoute: typeof DorilarRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/buyurtmalarim': {
-      id: '/buyurtmalarim'
-      path: '/buyurtmalarim'
-      fullPath: '/buyurtmalarim'
-      preLoaderRoute: typeof BuyurtmalarimRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin': {
@@ -259,12 +199,9 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
-  BuyurtmalarimRoute: BuyurtmalarimRoute,
   DorilarRoute: DorilarRoute,
   FiliallarRoute: FiliallarRoute,
   LoginRoute: LoginRoute,
-  ProfilRoute: ProfilRoute,
-  RegisterRoute: RegisterRoute,
   SavatchaRoute: SavatchaRoute,
   YangiliklarRoute: YangiliklarRoute,
   ApiPublicTelegramWebhookRoute: ApiPublicTelegramWebhookRoute,
