@@ -124,6 +124,7 @@ function RootComponent() {
             <Footer />
           </div>
           <PresenceTracker />
+          <AdminHotkey />
           <Toaster position="top-right" richColors />
 
         </CartProvider>
