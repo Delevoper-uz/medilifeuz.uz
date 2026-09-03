@@ -32,8 +32,6 @@ function formatNamanganTime(d: Date): string {
 type AddrMethod = "text" | "yandex";
 
 /** To'lov uchun karta raqami (admin bergan raqam). */
-const PAYMENT_CARD = "8600 0000 0000 0000";
-const PAYMENT_CARD_OWNER = "MediLife";
 
 function CartPage() {
   const { t } = useTranslation();
@@ -55,7 +53,6 @@ function CartPage() {
   const [addressYandex, setAddressYandex] = useState("");
   const [addressYandexUrl, setAddressYandexUrl] = useState<string | undefined>();
   const [note, setNote] = useState("");
-  const [paid, setPaid] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -93,13 +90,11 @@ function CartPage() {
           address: finalAddress,
           map_url: mapUrl ?? null,
           note: note || null,
-          paid,
           items: items.map((i) => ({ medicine_id: i.id, quantity: i.quantity })),
         },
       });
       toast.success(`${t("cart.submitted")} #${res.orderId.slice(0, 8)}`);
       clear();
-      setPaid(false);
       navigate({ to: "/" });
     } catch (e: any) {
       toast.error(e.message ?? "Xatolik");
@@ -235,18 +230,13 @@ function CartPage() {
 
               <div className="border-t pt-4 space-y-2">
                 <Label>💳 To'lov</Label>
-                <div className="rounded-lg border bg-muted/40 p-3 space-y-1 text-sm">
-                  <div>Karta raqami: <span className="font-semibold tracking-wider">{PAYMENT_CARD}</span></div>
-                  <div className="text-muted-foreground">Karta egasi: {PAYMENT_CARD_OWNER}</div>
-                  <div className="font-semibold text-primary">To'lov summasi: {grand.toLocaleString()} {t("common.sum")}</div>
+                <div className="rounded-lg border bg-muted/40 p-3 text-sm space-y-1">
+                  <div className="font-semibold text-primary">Kuryerga yetkazilganda naqd to'lash</div>
+                  <div className="text-muted-foreground">To'lov summasi: {grand.toLocaleString()} {t("common.sum")}</div>
                 </div>
-                <label className="flex items-start gap-2 text-sm cursor-pointer">
-                  <input type="checkbox" className="mt-1" checked={paid} onChange={(e) => setPaid(e.target.checked)} />
-                  <span>Summani yuqoridagi kartaga o'tkazdim va buyurtmani tasdiqlayman</span>
-                </label>
               </div>
 
-              <Button onClick={submit} disabled={submitting || !paid} size="lg" className="w-full">
+              <Button onClick={submit} disabled={submitting} size="lg" className="w-full">
                 {submitting ? t("common.loading") : t("common.confirm")}
               </Button>
             </Card>

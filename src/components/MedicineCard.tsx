@@ -44,14 +44,14 @@ export function MedicineCard({ m }: { m: Medicine }) {
 
   return (
     <Card className="overflow-hidden flex flex-col group hover:shadow-lg transition-shadow">
-      <div className="aspect-square bg-muted overflow-hidden">
+      <div className="aspect-square bg-muted overflow-hidden flex items-center justify-center p-2">
         {m.image_url ? (
           <img
             src={m.image_url}
             alt={displayName}
             loading="lazy"
             referrerPolicy="no-referrer"
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+            className="mx-auto max-h-full max-w-full object-contain group-hover:scale-105 transition-transform"
             onError={(e) => {
               const el = e.currentTarget;
               el.style.display = "none";
