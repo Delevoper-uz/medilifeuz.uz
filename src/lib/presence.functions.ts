@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { requireAdminPanel } from "@/lib/admin-middleware";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 const HeartbeatSchema = z.object({
@@ -10,7 +11,7 @@ const HeartbeatSchema = z.object({
 });
 
 export const presenceHeartbeat = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAdminPanel])
   .inputValidator((i) => HeartbeatSchema.parse(i))
   .handler(async ({ data, context }) => {
     const { error } = await context.supabase.from("user_presence").upsert(
@@ -29,7 +30,7 @@ export const presenceHeartbeat = createServerFn({ method: "POST" })
   });
 
 export const adminListPresence = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAdminPanel])
   .inputValidator((i) => (i ?? {}))
   .handler(async ({ context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");

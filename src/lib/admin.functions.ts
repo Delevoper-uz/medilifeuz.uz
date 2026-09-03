@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { Buffer } from "buffer";
 import { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { requireAdminPanel } from "@/lib/admin-middleware";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 async function assertAdmin(userId: string) {
@@ -34,10 +35,9 @@ const UploadSchema = z.object({
 });
 
 export const adminUploadMedia = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAdminPanel])
   .inputValidator((i) => UploadSchema.parse(i))
   .handler(async ({ data, context }) => {
-    await assertAdmin(context.userId);
     return { url: await uploadBase64ToMedia(data.file_name, data.content_type, data.base64) };
   });
 
@@ -49,20 +49,18 @@ const NewsSchema = z.object({
 });
 
 export const adminListNews = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAdminPanel])
   .inputValidator((i) => (i ?? {}))
   .handler(async ({ context }) => {
-    await assertAdmin(context.userId);
     const { data: rows, error } = await supabaseAdmin.from("news").select("*").order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
     return rows ?? [];
   });
 
 export const adminSaveNews = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAdminPanel])
   .inputValidator((i) => NewsSchema.parse(i))
   .handler(async ({ data, context }) => {
-    await assertAdmin(context.userId);
     const payload = { title: data.title, body: data.body ?? null, image_url: data.image_url || null };
     const query = data.id ? supabaseAdmin.from("news").update(payload).eq("id", data.id) : supabaseAdmin.from("news").insert(payload);
     const { error } = await query;
@@ -71,10 +69,9 @@ export const adminSaveNews = createServerFn({ method: "POST" })
   });
 
 export const adminDeleteNews = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAdminPanel])
   .inputValidator((i) => IdSchema.parse(i))
   .handler(async ({ data, context }) => {
-    await assertAdmin(context.userId);
     const { error } = await supabaseAdmin.from("news").delete().eq("id", data.id);
     if (error) throw new Error(error.message);
     return { ok: true };
@@ -93,10 +90,9 @@ const MedicineSchema = z.object({
 });
 
 export const adminListMedicines = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAdminPanel])
   .inputValidator((i) => (i ?? {}))
   .handler(async ({ context }) => {
-    await assertAdmin(context.userId);
     const out: any[] = [];
     const size = 1000;
     for (let from = 0; ; from += size) {
@@ -114,10 +110,9 @@ export const adminListMedicines = createServerFn({ method: "POST" })
 
 
 export const adminSaveMedicine = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAdminPanel])
   .inputValidator((i) => MedicineSchema.parse(i))
   .handler(async ({ data, context }) => {
-    await assertAdmin(context.userId);
     const payload: any = { name: data.name, name_cyrl: data.name_cyrl || null, description: data.description ?? null, image_url: data.image_url || null, price: data.price, unit: data.unit, stock: data.stock };
     if (data.language) payload.language = data.language;
     const query = data.id ? supabaseAdmin.from("medicines").update(payload).eq("id", data.id) : supabaseAdmin.from("medicines").insert(payload);
@@ -137,10 +132,9 @@ const BulkMedicinesSchema = z.object({
 });
 
 export const adminBulkImportMedicines = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAdminPanel])
   .inputValidator((i) => BulkMedicinesSchema.parse(i))
   .handler(async ({ data, context }) => {
-    await assertAdmin(context.userId);
     const rows = data.items.map((r) => ({
       name: r.name,
       name_cyrl: r.name_cyrl || null,
@@ -162,20 +156,18 @@ export const adminBulkImportMedicines = createServerFn({ method: "POST" })
   });
 
 export const adminDeleteMedicine = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAdminPanel])
   .inputValidator((i) => IdSchema.parse(i))
   .handler(async ({ data, context }) => {
-    await assertAdmin(context.userId);
     const { error } = await supabaseAdmin.from("medicines").delete().eq("id", data.id);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
 
 export const adminDeleteAllMedicines = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAdminPanel])
   .inputValidator((i: any) => ({ language: i?.language as "latin" | "cyrillic" | undefined }))
   .handler(async ({ data, context }) => {
-    await assertAdmin(context.userId);
     let q = supabaseAdmin.from("medicines").delete({ count: "exact" }).not("id", "is", null);
     if (data.language) q = q.eq("language", data.language);
     const { error, count } = await q;
@@ -197,20 +189,18 @@ const BranchSchema = z.object({
 
 
 export const adminListBranches = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAdminPanel])
   .inputValidator((i) => (i ?? {}))
   .handler(async ({ context }) => {
-    await assertAdmin(context.userId);
     const { data: rows, error } = await supabaseAdmin.from("branches").select("*").order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
     return rows ?? [];
   });
 
 export const adminSaveBranch = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAdminPanel])
   .inputValidator((i) => BranchSchema.parse(i))
   .handler(async ({ data, context }) => {
-    await assertAdmin(context.userId);
     const payload = {
       name: data.name,
       image_url: data.image_url || null,
@@ -228,10 +218,9 @@ export const adminSaveBranch = createServerFn({ method: "POST" })
   });
 
 export const adminDeleteBranch = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAdminPanel])
   .inputValidator((i) => IdSchema.parse(i))
   .handler(async ({ data, context }) => {
-    await assertAdmin(context.userId);
     const { error } = await supabaseAdmin.from("branches").delete().eq("id", data.id);
     if (error) throw new Error(error.message);
     return { ok: true };
@@ -243,10 +232,9 @@ const OrderStatusSchema = z.object({
 });
 
 export const adminListOrders = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAdminPanel])
   .inputValidator((i) => (i ?? {}))
   .handler(async ({ context }) => {
-    await assertAdmin(context.userId);
     const { data: rows, error } = await supabaseAdmin.from("orders").select("*, order_items(*)").order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
     return rows ?? [];
@@ -261,10 +249,9 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 export const adminSetOrderStatus = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAdminPanel])
   .inputValidator((i) => OrderStatusSchema.parse(i))
   .handler(async ({ data, context }) => {
-    await assertAdmin(context.userId);
     const { error } = await supabaseAdmin.from("orders").update({ status: data.status }).eq("id", data.id);
     if (error) throw new Error(error.message);
 
@@ -301,10 +288,9 @@ export const adminSetOrderStatus = createServerFn({ method: "POST" })
 
 
 export const adminListUsers = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAdminPanel])
   .inputValidator((i) => (i ?? {}))
   .handler(async ({ context }) => {
-    await assertAdmin(context.userId);
 
     const { data: usersData, error } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 200 });
     if (error) throw new Error(error.message);
@@ -333,10 +319,9 @@ const ResetSchema = z.object({
 });
 
 export const adminResetPassword = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAdminPanel])
   .inputValidator((i) => ResetSchema.parse(i))
   .handler(async ({ data, context }) => {
-    await assertAdmin(context.userId);
     const { error } = await supabaseAdmin.auth.admin.updateUserById(data.user_id, { password: data.new_password });
     if (error) throw new Error(error.message);
     return { ok: true };
@@ -350,10 +335,9 @@ const UpdateUserSchema = z.object({
 });
 
 export const adminUpdateUser = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAdminPanel])
   .inputValidator((i) => UpdateUserSchema.parse(i))
   .handler(async ({ data, context }) => {
-    await assertAdmin(context.userId);
     if (data.email) {
       const { error } = await supabaseAdmin.auth.admin.updateUserById(data.user_id, { email: data.email });
       if (error) throw new Error(error.message);
@@ -370,20 +354,18 @@ export const adminUpdateUser = createServerFn({ method: "POST" })
 
 const DeleteSchema = z.object({ user_id: z.string().uuid() });
 export const adminDeleteUser = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAdminPanel])
   .inputValidator((i) => DeleteSchema.parse(i))
   .handler(async ({ data, context }) => {
-    await assertAdmin(context.userId);
     const { error } = await supabaseAdmin.auth.admin.deleteUser(data.user_id);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
 
 export const adminDeleteOrder = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAdminPanel])
   .inputValidator((i) => IdSchema.parse(i))
   .handler(async ({ data, context }) => {
-    await assertAdmin(context.userId);
     await supabaseAdmin.from("order_items").delete().eq("order_id", data.id);
     await supabaseAdmin.from("reviews").delete().eq("order_id", data.id);
     const { error } = await supabaseAdmin.from("orders").delete().eq("id", data.id);
