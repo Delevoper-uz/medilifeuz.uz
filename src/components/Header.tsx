@@ -1,6 +1,7 @@
+import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
-import { Moon, Sun, ShoppingCart } from "lucide-react";
+import { Moon, Sun, ShoppingCart, Menu, X } from "lucide-react";
 import logo from "@/assets/medilife-logo.jpg";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -14,43 +15,59 @@ import { useCart } from "@/hooks/use-cart";
 import { useTheme } from "@/hooks/use-theme";
 import i18n from "@/lib/i18n";
 
+const NAV = [
+  { to: "/", key: "nav.home", exact: true },
+  { to: "/dorilar", key: "nav.medicines" },
+  { to: "/yangiliklar", key: "nav.news" },
+  { to: "/filiallar", key: "nav.branches" },
+] as const;
+
 export function Header() {
   const { t } = useTranslation();
   const { count } = useCart();
   const { theme, toggle } = useTheme();
+  const [open, setOpen] = useState(false);
 
   const changeLang = (lng: string) => {
     i18n.changeLanguage(lng);
     localStorage.setItem("medilife-lang", lng);
   };
 
+  const langLabel = i18n.language === "uz_cyrl" ? "RUS" : "UZ";
   const linkCls = "px-3 py-2 rounded-md text-sm font-medium hover:bg-accent transition-colors";
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-      <div className="container mx-auto flex h-16 items-center gap-2 px-4">
-        <Link to="/" className="flex items-center gap-2 mr-auto">
-          <img src={logo} alt="MediLife" className="h-10 w-10 rounded-md object-cover" />
-          <span className="font-bold text-xl text-primary">MediLife</span>
+    <header className="sticky top-0 z-40 w-full max-w-[100vw] border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+      <div className="container mx-auto grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 px-3 h-16 md:flex">
+        <Link to="/" className="flex min-w-0 items-center gap-2 md:mr-auto">
+          <img src={logo} alt="MediLife" className="h-9 w-9 shrink-0 rounded-md object-cover" />
+          <span className="truncate font-bold text-lg sm:text-xl text-primary">MediLife</span>
         </Link>
 
         <nav className="hidden md:flex items-center gap-1 mx-auto">
-          <Link to="/" className={linkCls} activeProps={{ className: linkCls + " text-primary" }} activeOptions={{ exact: true }}>{t("nav.home")}</Link>
-          <Link to="/dorilar" className={linkCls} activeProps={{ className: linkCls + " text-primary" }}>{t("nav.medicines")}</Link>
-          <Link to="/yangiliklar" className={linkCls} activeProps={{ className: linkCls + " text-primary" }}>{t("nav.news")}</Link>
-          <Link to="/filiallar" className={linkCls} activeProps={{ className: linkCls + " text-primary" }}>{t("nav.branches")}</Link>
+          {NAV.map((n) => (
+            <Link
+              key={n.to}
+              to={n.to}
+              className={linkCls}
+              activeProps={{ className: linkCls + " text-primary" }}
+              {...(n.exact ? { activeOptions: { exact: true } } : {})}
+            >
+              {t(n.key)}
+            </Link>
+          ))}
         </nav>
 
-        <div className="flex items-center gap-1">
+        <div className="flex shrink-0 items-center gap-0.5">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="font-semibold uppercase">
-                {i18n.language}
+              <Button variant="ghost" size="sm" className="font-semibold px-2">
+                {langLabel}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => changeLang("uz_cyrl")}>Ўзбекча (Кирилл)</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => changeLang("uz")}>O'zbekcha (Lotin)</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => changeLang("uz")}>UZ — O'zbekcha</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => changeLang("uz_cyrl")}>RUS — Кирилл</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
 
@@ -62,22 +79,41 @@ export function Header() {
             <Button variant="ghost" size="icon" className="relative">
               <ShoppingCart className="h-5 w-5" />
               {count > 0 && (
-                <Badge className="absolute -top-1 -right-1 h-5 min-w-5 px-1 flex items-center justify-center" variant="default">
+                <Badge className="absolute -top-1 -right-1 h-5 min-w-5 px-1 flex items-center justify-center">
                   {count}
                 </Badge>
               )}
             </Button>
           </Link>
+
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden"
+            aria-label="menu"
+            onClick={() => setOpen((v) => !v)}
+          >
+            {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </Button>
         </div>
       </div>
 
-      {/* Mobile nav */}
-      <nav className="md:hidden flex items-center justify-center gap-1 pb-2 px-2 overflow-x-auto">
-        <Link to="/" className={linkCls} activeProps={{ className: linkCls + " text-primary" }} activeOptions={{ exact: true }}>{t("nav.home")}</Link>
-        <Link to="/dorilar" className={linkCls} activeProps={{ className: linkCls + " text-primary" }}>{t("nav.medicines")}</Link>
-        <Link to="/yangiliklar" className={linkCls} activeProps={{ className: linkCls + " text-primary" }}>{t("nav.news")}</Link>
-        <Link to="/filiallar" className={linkCls} activeProps={{ className: linkCls + " text-primary" }}>{t("nav.branches")}</Link>
-      </nav>
+      {open && (
+        <nav className="md:hidden border-t bg-background px-3 py-2 flex flex-col">
+          {NAV.map((n) => (
+            <Link
+              key={n.to}
+              to={n.to}
+              onClick={() => setOpen(false)}
+              className="px-3 py-3 rounded-md text-base font-medium hover:bg-accent"
+              activeProps={{ className: "px-3 py-3 rounded-md text-base font-medium text-primary bg-accent/50" }}
+              {...(n.exact ? { activeOptions: { exact: true } } : {})}
+            >
+              {t(n.key)}
+            </Link>
+          ))}
+        </nav>
+      )}
     </header>
   );
 }
