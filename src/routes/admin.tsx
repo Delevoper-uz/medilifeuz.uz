@@ -46,23 +46,70 @@ export const Route = createFileRoute("/admin")({
 
 function AdminPage() {
   const navigate = useNavigate();
-  const { isAdmin, loading, user } = useAuth();
+  const loginFn = useServerFn(adminPanelLogin);
+  const checkFn = useServerFn(adminPanelCheck);
+  const [authed, setAuthed] = useState(false);
+  const [checking, setChecking] = useState(true);
+  const [password, setPassword] = useState("");
+  const [busy, setBusy] = useState(false);
 
-  if (loading) {
+  useEffect(() => {
+    const token = getAdminToken();
+    if (!token) {
+      setChecking(false);
+      return;
+    }
+    checkFn({ data: { token } })
+      .then((r) => setAuthed(!!r.ok))
+      .catch(() => setAuthed(false))
+      .finally(() => setChecking(false));
+  }, [checkFn]);
+
+  const submit = async () => {
+    if (!password.trim()) return;
+    setBusy(true);
+    try {
+      const { token } = await loginFn({ data: { password } });
+      setAdminToken(token);
+      setAuthed(true);
+      setPassword("");
+      toast.success("Admin panelga kirdingiz");
+    } catch (err: any) {
+      toast.error(err?.message || "Parol noto'g'ri");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  if (checking) {
     return <div className="container mx-auto px-4 py-20 text-center text-muted-foreground">Yuklanmoqda...</div>;
   }
-  if (!user || !isAdmin) {
+
+  if (!authed) {
     return (
-      <div className="container mx-auto px-4 py-20 text-center space-y-4">
-        <h1 className="text-2xl font-semibold">Admin panel yopiq</h1>
-        <p className="text-muted-foreground">Bu sahifa faqat administratorlar uchun.</p>
-        <div className="flex justify-center gap-2">
-          {!user && <Button onClick={() => navigate({ to: "/login" })}>Admin sifatida kirish</Button>}
-          <Button variant="outline" onClick={() => navigate({ to: "/" })}>Bosh sahifaga qaytish</Button>
-        </div>
-      </div>
+      <Dialog open onOpenChange={(o) => { if (!o) navigate({ to: "/" }); }}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2"><KeyRound className="h-4 w-4" /> Admin parol</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <Input
+              type="password"
+              autoFocus
+              placeholder="Parolni kiriting"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") void submit(); }}
+            />
+            <Button className="w-full" disabled={busy} onClick={() => void submit()}>
+              {busy ? "Tekshirilmoqda..." : "Kirish"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     );
   }
+
 
   return (
     <div className="container mx-auto px-4 py-10">
