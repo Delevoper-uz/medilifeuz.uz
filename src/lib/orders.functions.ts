@@ -14,7 +14,6 @@ const PlaceOrderSchema = z.object({
   address: z.string().trim().min(1).max(600),
   map_url: z.string().url().max(500).optional().nullable(),
   note: z.string().max(500).optional().nullable(),
-  paid: z.boolean().optional(),
   items: z.array(OrderItemSchema).min(1).max(50),
 });
 
@@ -86,7 +85,7 @@ export const placeOrder = createServerFn({ method: "POST" })
         `🚚 Yetkazib berish (shahar bo'ylab bepul)`,
         `📍 ${data.address}`,
       ];
-      lines.push(`💳 To'lov: ${data.paid ? "karta orqali to'landi (mijoz tasdiqladi)" : "tasdiqlanmagan"}`);
+      lines.push(`💳 To'lov turi: Naqd (kuryerga yetkazilganda)`);
       if (data.map_url) lines.push(`🗺 <a href="${data.map_url}">Xaritada ko'rish</a>`);
       lines.push(
         "",
@@ -104,7 +103,19 @@ export const placeOrder = createServerFn({ method: "POST" })
         await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ chat_id: chatId, text: lines.join("\n"), parse_mode: "HTML" }),
+          body: JSON.stringify({
+            chat_id: chatId,
+            text: lines.join("\n"),
+            parse_mode: "HTML",
+            reply_markup: {
+              inline_keyboard: Array.from({ length: 5 }, (_, row) =>
+                [row * 2 + 1, row * 2 + 2].map((n) => ({
+                  text: `📥 ${n}-Filial`,
+                  callback_data: `take:${n}:${order.id}`,
+                })),
+              ),
+            },
+          }),
         });
       } catch (e) {
         console.error("Telegram send failed", e);
