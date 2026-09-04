@@ -35,9 +35,71 @@ export const Route = createFileRoute("/api/public/telegram/webhook")({
         if (!safeEqual(got, expected)) return new Response("Unauthorized", { status: 401 });
 
         const update = await request.json();
+
+        // 1) Filial tugmasi bosilganda buyurtmani qabul qilish
+        const cb = update.callback_query;
+        if (cb) {
+          const dataStr: string = cb.data ?? "";
+          const answer = (text: string) =>
+            fetch(`https://api.telegram.org/bot${token}/answerCallbackQuery`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ callback_query_id: cb.id, text }),
+            }).catch(() => undefined);
+
+          const m = /^take:(\d{1,2}):([0-9a-f-]{36})$/.exec(dataStr);
+          if (m) {
+            const branch = `${m[1]}-Filial`;
+            const orderId = m[2] as string;
+            const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+            const { data: existing } = await supabaseAdmin
+              .from("orders")
+              .select("id, branch, status")
+              .eq("id", orderId)
+              .maybeSingle();
+            if (existing?.branch) {
+              await answer(`Bu buyurtma allaqachon ${existing.branch} tomonidan qabul qilingan.`);
+              return Response.json({ ok: true });
+            }
+            await supabaseAdmin
+              .from("orders")
+              .update({ status: "processing", branch })
+              .eq("id", orderId);
+            await fetch(`https://api.telegram.org/bot${token}/editMessageText`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                chat_id: cb.message?.chat?.id,
+                message_id: cb.message?.message_id,
+                text: `${cb.message?.text ?? ""}\n\n✅ Buyurtma [${branch}] tomonidan qabul qilindi. To'lov turi: Naqd`,
+                reply_markup: { inline_keyboard: [] },
+              }),
+            }).catch(() => undefined);
+            await answer(`✅ ${branch} qabul qildi`);
+            return Response.json({ ok: true });
+          }
+
+          if (dataStr === "ai_done" || dataStr === "ai_more") {
+            await answer(dataStr === "ai_done" ? "✅ Buyurtma yakunlandi" : "➕ Keyingi dorini yuboring");
+            if (cb.message?.chat?.id) {
+              await send(token, {
+                chat_id: cb.message.chat.id,
+                text:
+                  dataStr === "ai_done"
+                    ? "✅ Bo'ldi. Buyurtmangiz qabul qilindi, operator siz bilan bog'lanadi."
+                    : "➕ Yana dori nomini yoki rasmini yuboring.",
+              });
+            }
+            return Response.json({ ok: true });
+          }
+          await answer("");
+          return Response.json({ ok: true });
+        }
+
         const message = update.message ?? update.edited_message;
         const chatId = message?.chat?.id;
         if (!chatId) return Response.json({ ok: true });
+
 
         // Guruhga matn yozilsa — matndagi dorilarni bazadan izlab javob qaytaramiz.
         const chatType: string = message?.chat?.type ?? "private";
