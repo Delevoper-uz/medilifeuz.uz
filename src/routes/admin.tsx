@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
@@ -12,7 +12,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useAuth } from "@/hooks/use-auth";
+import { adminPanelCheck, adminPanelLogin } from "@/lib/admin-panel.functions";
+import { getAdminToken, setAdminToken } from "@/lib/admin-token";
 import {
   adminBulkImportMedicines,
   adminDeleteAllMedicines,
@@ -115,7 +116,7 @@ function AdminPage() {
     <div className="container mx-auto px-4 py-10">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-bold">Admin Panel</h1>
-        <Button variant="outline" size="sm" onClick={() => navigate({ to: "/" })} className="gap-2">
+        <Button variant="outline" size="sm" onClick={() => { setAdminToken(null); navigate({ to: "/" }); }} className="gap-2">
           <LogOut className="h-4 w-4" /> Chiqish
         </Button>
       </div>
