@@ -15,12 +15,13 @@ import { useCart } from "@/hooks/use-cart";
 import { useTheme } from "@/hooks/use-theme";
 import i18n from "@/lib/i18n";
 
-const NAV = [
+const NAV: { to: string; key: string; exact?: boolean }[] = [
   { to: "/", key: "nav.home", exact: true },
   { to: "/dorilar", key: "nav.medicines" },
   { to: "/yangiliklar", key: "nav.news" },
   { to: "/filiallar", key: "nav.branches" },
-] as const;
+];
+
 
 export function Header() {
   const { t } = useTranslation();
