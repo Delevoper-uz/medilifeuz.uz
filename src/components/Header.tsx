@@ -5,12 +5,6 @@ import { Moon, Sun, ShoppingCart, Menu, X } from "lucide-react";
 import logo from "@/assets/medilife-logo.jpg";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { useCart } from "@/hooks/use-cart";
 import { useTheme } from "@/hooks/use-theme";
 import i18n from "@/lib/i18n";
@@ -60,17 +54,16 @@ export function Header() {
         </nav>
 
         <div className="flex shrink-0 items-center gap-0.5">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="font-semibold px-2">
-                {langLabel}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => changeLang("uz")}>UZ — O'zbekcha</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => changeLang("uz_cyrl")}>RUS — Кирилл</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="font-semibold px-2"
+            aria-label="language"
+            onClick={() => changeLang(i18n.language === "uz_cyrl" ? "uz" : "uz_cyrl")}
+          >
+            {langLabel}
+          </Button>
+
 
           <Button variant="ghost" size="icon" onClick={toggle} aria-label="theme">
             {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
