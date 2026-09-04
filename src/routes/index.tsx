@@ -91,27 +91,28 @@ function Home() {
 
 
   return (
-    <div className="container mx-auto px-6 md:px-10 lg:px-16 py-8 space-y-16">
+    <div className="container mx-auto w-full max-w-full px-4 md:px-10 lg:px-16 py-8 space-y-16 overflow-x-hidden">
       {/* Hero */}
-      <section className="grid md:grid-cols-2 gap-10 items-center py-10 md:py-16">
-        <div className="space-y-6 ml-5">
+      <section className="grid md:grid-cols-2 gap-10 items-center justify-items-center py-10 md:py-16">
+        <div className="w-full max-w-xl space-y-6 text-center flex flex-col items-center">
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.05]">
             <span className="text-primary">MediLife</span>
             <span className="block mt-2">{t("home.hero_title")}</span>
           </h1>
-          <p className="text-lg md:text-xl text-muted-foreground max-w-xl">{t("home.hero_sub")}</p>
-          <div className="flex flex-nowrap gap-3">
+          <p className="text-lg md:text-xl text-muted-foreground max-w-xl mx-auto">{t("home.hero_sub")}</p>
+          <div className="flex flex-wrap justify-center gap-3 max-w-full">
             <Link to="/dorilar"><Button size="lg" className="gap-2">{t("home.cta")} <ArrowRight className="h-4 w-4" /></Button></Link>
             <Link to="/filiallar"><Button size="lg" variant="outline">{t("nav.branches")}</Button></Link>
           </div>
         </div>
-        <div className="flex justify-center">
-          <div className="relative">
+        <div className="flex w-full justify-center">
+          <div className="relative mx-auto max-w-full">
             <div className="absolute inset-0 gradient-primary rounded-full blur-3xl opacity-40 scale-110" />
-            <img src={logo} alt="MediLife" className="relative w-80 h-80 md:w-[420px] md:h-[420px] lg:w-[480px] lg:h-[480px] object-cover rounded-3xl shadow-2xl" />
+            <img src={logo} alt="MediLife" className="relative mx-auto block w-64 h-64 sm:w-80 sm:h-80 md:w-[420px] md:h-[420px] lg:w-[480px] lg:h-[480px] max-w-full object-cover rounded-3xl shadow-2xl" />
           </div>
         </div>
       </section>
+
 
       {/* Medicines */}
       <section id="dorilar">
