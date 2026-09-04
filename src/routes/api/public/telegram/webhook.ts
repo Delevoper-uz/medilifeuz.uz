@@ -112,13 +112,26 @@ export const Route = createFileRoute("/api/public/telegram/webhook")({
           const lines = found
             .slice(0, 40)
             .map((m, i) => `${i + 1}. ${m.name}${m.name_cyrl ? ` (${m.name_cyrl})` : ""} — ${m.price} so'm`);
+          const first = found[0];
           const reply = found.length
             ? `🔎 Topilgan dorilar (${found.length}):\n${lines.join("\n")}${
                 missing.length ? `\n\n❌ Topilmadi: ${missing.slice(0, 20).join(", ")}` : ""
-              }`
-            : `❌ Bu matndagi dorilar bazada topilmadi: ${names.slice(0, 20).join(", ")}`;
-          await send(token, { chat_id: chatId, text: reply });
+              }\n\n🛒 Savatga qo'shildi: ${first?.name ?? ""}`
+            : `🛒 Savatga qo'shildi: ${names[0]}\n(AI aniq tushunmadi, 1-dori qo'shildi)`;
+          await send(token, {
+            chat_id: chatId,
+            text: reply,
+            reply_markup: {
+              inline_keyboard: [
+                [
+                  { text: "➕ Yana qo'shamiz", callback_data: "ai_more" },
+                  { text: "✅ Bo'ldi shu xolos", callback_data: "ai_done" },
+                ],
+              ],
+            },
+          });
           return Response.json({ ok: true });
+
         }
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
