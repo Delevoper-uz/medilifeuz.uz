@@ -5,12 +5,6 @@ import { Moon, Sun, ShoppingCart, Menu, X } from "lucide-react";
 import logo from "@/assets/medilife-logo.jpg";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { useCart } from "@/hooks/use-cart";
 import { useTheme } from "@/hooks/use-theme";
 import i18n from "@/lib/i18n";
