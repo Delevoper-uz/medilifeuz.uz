@@ -131,8 +131,10 @@ export function AiListSearch() {
           )}
           {result.found.length > 0 && (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-              {result.found.map((m) => (
-                <MedicineCard key={m.id} m={m as unknown as Medicine} />
+              {shuffle(result.found).map((m, i) => (
+                <div key={m.id} className="reveal-up" style={{ animationDelay: `${Math.min(i, 8) * 60}ms` }}>
+                  <MedicineCard m={m as unknown as Medicine} />
+                </div>
               ))}
             </div>
           )}
