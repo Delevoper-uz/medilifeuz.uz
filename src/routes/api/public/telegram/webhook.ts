@@ -147,6 +147,7 @@ export const Route = createFileRoute("/api/public/telegram/webhook")({
                   { text: "➕ Yana qo'shamiz", callback_data: "ai_more" },
                   { text: "✅ Bo'ldi shu xolos", callback_data: "ai_done" },
                 ],
+                [{ text: "✅ BO'LDI SHULAR", callback_data: "ai_share" }],
               ],
             },
           });
