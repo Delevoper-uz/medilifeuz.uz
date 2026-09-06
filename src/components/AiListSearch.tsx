@@ -19,6 +19,8 @@ function shuffle<T>(arr: T[]): T[] {
 /** Dorilar ro'yxati rasmini yuklab, AI orqali tahlil qilish bloki. */
 export function AiListSearch() {
   const analyze = useServerFn(analyzeMedicineImage);
+  const fromBot = useServerFn(getBotSharedList);
+  const [botLoading, setBotLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
