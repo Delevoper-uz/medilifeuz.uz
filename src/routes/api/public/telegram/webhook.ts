@@ -79,6 +79,26 @@ export const Route = createFileRoute("/api/public/telegram/webhook")({
             return Response.json({ ok: true });
           }
 
+          if (dataStr === "ai_share") {
+            const src: string = cb.message?.text ?? "";
+            const names = src
+              .split("\n")
+              .map((l) => /^\s*\d+\.\s*(.+?)\s*(?:—|\()/.exec(l)?.[1]?.trim())
+              .filter((n): n is string => !!n && n.length >= 3);
+            if (names.length) {
+              const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+              await (supabaseAdmin as unknown as { from: (t: string) => any })
+                .from("bot_shared_lists")
+                .insert({ chat_id: cb.message?.chat?.id ?? null, names });
+            }
+            await answer("✅ Ro'yxat saytga yuborildi");
+            await send(token, {
+              chat_id: cb.message?.chat?.id,
+              text: `✅ Bo'ldi shular (${names.length} ta). Saytdagi "Botdan kelgan ro'yxat" tugmasini bosib to'liq ko'rishingiz mumkin.`,
+            });
+            return Response.json({ ok: true });
+          }
+
           if (dataStr === "ai_done" || dataStr === "ai_more") {
             await answer(dataStr === "ai_done" ? "✅ Buyurtma yakunlandi" : "➕ Keyingi dorini yuboring");
             if (cb.message?.chat?.id) {
@@ -127,6 +147,7 @@ export const Route = createFileRoute("/api/public/telegram/webhook")({
                   { text: "➕ Yana qo'shamiz", callback_data: "ai_more" },
                   { text: "✅ Bo'ldi shu xolos", callback_data: "ai_done" },
                 ],
+                [{ text: "✅ BO'LDI SHULAR", callback_data: "ai_share" }],
               ],
             },
           });

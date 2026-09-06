@@ -32,7 +32,7 @@ function MedicinesPage() {
   const [dq, setDq] = useState("");
   const [minPrice, setMinPrice] = useState<string>("");
   const [maxPrice, setMaxPrice] = useState<string>("");
-  const [sort, setSort] = useState<"az" | "za" | "price-asc" | "price-desc">("az");
+  const [sort, setSort] = useState<"az" | "za" | "price-asc" | "price-desc" | "random">("random");
 
   useEffect(() => {
     const id = setTimeout(() => setDq(q.trim()), 250);
@@ -79,6 +79,13 @@ function MedicinesPage() {
         seen.add(key);
         unique.push(m);
       }
+      // "Aralash" tanlansa har xil tartibda ko'rsatamiz
+      if (sort === "random") {
+        for (let i = unique.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [unique[i], unique[j]] = [unique[j] as Medicine, unique[i] as Medicine];
+        }
+      }
       return unique;
     },
   });
@@ -104,6 +111,7 @@ function MedicinesPage() {
           <Select value={sort} onValueChange={(v) => setSort(v as typeof sort)}>
             <SelectTrigger className="w-44"><SelectValue /></SelectTrigger>
             <SelectContent>
+              <SelectItem value="random">Aralash</SelectItem>
               <SelectItem value="az">A → Z</SelectItem>
               <SelectItem value="za">Z → A</SelectItem>
               <SelectItem value="price-asc">Narx: arzon → qimmat</SelectItem>
@@ -130,7 +138,11 @@ function MedicinesPage() {
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            {filtered.map((m) => <MedicineCard key={m.id} m={m} />)}
+            {filtered.map((m, i) => (
+              <div key={m.id} className="reveal-up" style={{ animationDelay: `${Math.min(i, 10) * 50}ms` }}>
+                <MedicineCard m={m} />
+              </div>
+            ))}
           </div>
         </>
       )}

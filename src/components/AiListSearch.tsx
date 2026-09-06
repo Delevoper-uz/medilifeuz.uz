@@ -4,11 +4,23 @@ import { toast } from "sonner";
 import { ImagePlus, Sparkles, Loader2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MedicineCard, type Medicine } from "@/components/MedicineCard";
-import { analyzeMedicineImage, type AiSearchResult } from "@/lib/ai-search.functions";
+import { analyzeMedicineImage, getBotSharedList, type AiSearchResult } from "@/lib/ai-search.functions";
+
+/** Ro'yxatni har xil tartibda ko'rsatish uchun aralashtiradi. */
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j] as T, a[i] as T];
+  }
+  return a;
+}
 
 /** Dorilar ro'yxati rasmini yuklab, AI orqali tahlil qilish bloki. */
 export function AiListSearch() {
   const analyze = useServerFn(analyzeMedicineImage);
+  const fromBot = useServerFn(getBotSharedList);
+  const [botLoading, setBotLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -74,6 +86,28 @@ export function AiListSearch() {
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImagePlus className="h-4 w-4" />}
           Rasm yuklash
         </Button>
+        <Button
+          variant="secondary"
+          className="gap-2"
+          disabled={botLoading}
+          onClick={async () => {
+            setBotLoading(true);
+            try {
+              const res = await fromBot();
+              setPreview(null);
+              setResult(res);
+              if (res.found.length) toast.success(res.message);
+              else toast.warning(res.message);
+            } catch (e) {
+              toast.error(e instanceof Error ? e.message : "Ro'yxat olinmadi");
+            } finally {
+              setBotLoading(false);
+            }
+          }}
+        >
+          {botLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+          Botdan kelgan ro'yxat
+        </Button>
         {(preview || result) && (
           <Button variant="ghost" size="icon" onClick={reset} aria-label="tozalash">
             <X className="h-4 w-4" />
@@ -97,8 +131,10 @@ export function AiListSearch() {
           )}
           {result.found.length > 0 && (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-              {result.found.map((m) => (
-                <MedicineCard key={m.id} m={m as unknown as Medicine} />
+              {shuffle(result.found).map((m, i) => (
+                <div key={m.id} className="reveal-up" style={{ animationDelay: `${Math.min(i, 8) * 60}ms` }}>
+                  <MedicineCard m={m as unknown as Medicine} />
+                </div>
               ))}
             </div>
           )}

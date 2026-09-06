@@ -128,6 +128,7 @@ function AdminPage() {
           <TabsTrigger value="orders">Buyurtmalar</TabsTrigger>
           <TabsTrigger value="users">Foydalanuvchilar</TabsTrigger>
           <TabsTrigger value="activity">Foydalanuvchilar Faoliyati</TabsTrigger>
+          <TabsTrigger value="pricebot">Narx boti</TabsTrigger>
         </TabsList>
         <TabsContent value="news" className="mt-6"><NewsAdmin /></TabsContent>
         <TabsContent value="medicines" className="mt-6"><MedicinesAdmin /></TabsContent>
@@ -135,6 +136,7 @@ function AdminPage() {
         <TabsContent value="orders" className="mt-6"><OrdersAdmin /></TabsContent>
         <TabsContent value="users" className="mt-6"><UsersAdmin /></TabsContent>
         <TabsContent value="activity" className="mt-6"><ActivityAdmin /></TabsContent>
+        <TabsContent value="pricebot" className="mt-6"><PriceBotAdmin /></TabsContent>
       </Tabs>
     </div>
   );
@@ -607,6 +609,40 @@ function UsersAdmin() {
           </div>}
         </DialogContent>
       </Dialog>
+    </div>
+  );
+}
+
+/** Narx boti qanday ishlashi haqida qo'llanma. */
+function PriceBotAdmin() {
+  const steps = [
+    "Botga /start yuboring — bot tilni so'raydi: Uz (lotin) yoki Kirill.",
+    "Tanlagach, dorilar ro'yxatini yuboring (har bir dori yangi qatordan).",
+    "Bot butun bazani tekshirib, har bir dori uchun \"BOR\" yoki \"YOQ\" deb javob beradi.",
+    "Biror dorini almashtirish uchun uning raqamini yuboring (masalan: 2) — bot yangi nom so'raydi.",
+    "\"Narxlarni yuborish\" tugmasini bosib, narxlarni tartib bilan yuboring: 1. 12000  2. 20000  3. 3000",
+    "\"BO'LDI O'ZGARTIRISH\" tugmasi bosilganda narxlar bazada darhol yangilanadi.",
+  ];
+  return (
+    <div className="space-y-4">
+      <div className="rounded-lg border bg-card p-4 reveal-up">
+        <h3 className="font-semibold mb-2">Narx boti ishga tushirilgan</h3>
+        <p className="text-sm text-muted-foreground">
+          Yangi bot ulanган. Narxlarni to'g'ridan-to'g'ri Telegram orqali o'zgartirish tartibi:
+        </p>
+        <ol className="mt-3 space-y-2 list-decimal pl-5 text-sm">
+          {steps.map((t) => (
+            <li key={t}>{t}</li>
+          ))}
+        </ol>
+      </div>
+      <div className="rounded-lg border bg-card p-4 reveal-up">
+        <h3 className="font-semibold mb-2">Asosiy botdagi ro'yxat</h3>
+        <p className="text-sm text-muted-foreground">
+          Guruhda dorilar ro'yxati yuborilganda bot "BO'LDI SHULAR" tugmasini ko'rsatadi. U bosilgach, ro'yxat saytga
+          o'tadi va Dorilar sahifasidagi "Botdan kelgan ro'yxat" tugmasi orqali barcha topilgan dorilar chiqadi.
+        </p>
+      </div>
     </div>
   );
 }
