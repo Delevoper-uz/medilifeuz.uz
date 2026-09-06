@@ -14,6 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      bot_shared_lists: {
+        Row: {
+          chat_id: number | null
+          created_at: string
+          id: string
+          names: string[]
+        }
+        Insert: {
+          chat_id?: number | null
+          created_at?: string
+          id?: string
+          names?: string[]
+        }
+        Update: {
+          chat_id?: number | null
+          created_at?: string
+          id?: string
+          names?: string[]
+        }
+        Relationships: []
+      }
       branches: {
         Row: {
           address: string | null
@@ -245,6 +266,33 @@ export type Database = {
           expires_at?: string
           id?: string
           phone?: string
+        }
+        Relationships: []
+      }
+      price_bot_sessions: {
+        Row: {
+          chat_id: number
+          created_at: string
+          items: Json
+          lang: string
+          step: string
+          updated_at: string
+        }
+        Insert: {
+          chat_id: number
+          created_at?: string
+          items?: Json
+          lang?: string
+          step?: string
+          updated_at?: string
+        }
+        Update: {
+          chat_id?: number
+          created_at?: string
+          items?: Json
+          lang?: string
+          step?: string
+          updated_at?: string
         }
         Relationships: []
       }
