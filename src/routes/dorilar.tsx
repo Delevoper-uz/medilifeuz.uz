@@ -79,6 +79,13 @@ function MedicinesPage() {
         seen.add(key);
         unique.push(m);
       }
+      // "Aralash" tanlansa har xil tartibda ko'rsatamiz
+      if (sort === "random") {
+        for (let i = unique.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [unique[i], unique[j]] = [unique[j] as Medicine, unique[i] as Medicine];
+        }
+      }
       return unique;
     },
   });
