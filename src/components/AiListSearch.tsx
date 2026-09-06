@@ -86,6 +86,28 @@ export function AiListSearch() {
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImagePlus className="h-4 w-4" />}
           Rasm yuklash
         </Button>
+        <Button
+          variant="secondary"
+          className="gap-2"
+          disabled={botLoading}
+          onClick={async () => {
+            setBotLoading(true);
+            try {
+              const res = await fromBot();
+              setPreview(null);
+              setResult(res);
+              if (res.found.length) toast.success(res.message);
+              else toast.warning(res.message);
+            } catch (e) {
+              toast.error(e instanceof Error ? e.message : "Ro'yxat olinmadi");
+            } finally {
+              setBotLoading(false);
+            }
+          }}
+        >
+          {botLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+          Botdan kelgan ro'yxat
+        </Button>
         {(preview || result) && (
           <Button variant="ghost" size="icon" onClick={reset} aria-label="tozalash">
             <X className="h-4 w-4" />
