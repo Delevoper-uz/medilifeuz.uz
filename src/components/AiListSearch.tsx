@@ -4,7 +4,17 @@ import { toast } from "sonner";
 import { ImagePlus, Sparkles, Loader2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MedicineCard, type Medicine } from "@/components/MedicineCard";
-import { analyzeMedicineImage, type AiSearchResult } from "@/lib/ai-search.functions";
+import { analyzeMedicineImage, getBotSharedList, type AiSearchResult } from "@/lib/ai-search.functions";
+
+/** Ro'yxatni har xil tartibda ko'rsatish uchun aralashtiradi. */
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j] as T, a[i] as T];
+  }
+  return a;
+}
 
 /** Dorilar ro'yxati rasmini yuklab, AI orqali tahlil qilish bloki. */
 export function AiListSearch() {
