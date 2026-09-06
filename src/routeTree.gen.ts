@@ -17,6 +17,7 @@ import { Route as DorilarRouteImport } from './routes/dorilar'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiPublicTelegramWebhookRouteImport } from './routes/api/public/telegram/webhook'
+import { Route as ApiPublicTelegramPriceBotRouteImport } from './routes/api/public/telegram/price-bot'
 
 const YangiliklarRoute = YangiliklarRouteImport.update({
   id: '/yangiliklar',
@@ -59,6 +60,12 @@ const ApiPublicTelegramWebhookRoute =
     path: '/api/public/telegram/webhook',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicTelegramPriceBotRoute =
+  ApiPublicTelegramPriceBotRouteImport.update({
+    id: '/api/public/telegram/price-bot',
+    path: '/api/public/telegram/price-bot',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -68,6 +75,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/savatcha': typeof SavatchaRoute
   '/yangiliklar': typeof YangiliklarRoute
+  '/api/public/telegram/price-bot': typeof ApiPublicTelegramPriceBotRoute
   '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
 }
 export interface FileRoutesByTo {
@@ -78,6 +86,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/savatcha': typeof SavatchaRoute
   '/yangiliklar': typeof YangiliklarRoute
+  '/api/public/telegram/price-bot': typeof ApiPublicTelegramPriceBotRoute
   '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
 }
 export interface FileRoutesById {
@@ -89,6 +98,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/savatcha': typeof SavatchaRoute
   '/yangiliklar': typeof YangiliklarRoute
+  '/api/public/telegram/price-bot': typeof ApiPublicTelegramPriceBotRoute
   '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
 }
 export interface FileRouteTypes {
@@ -101,6 +111,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/savatcha'
     | '/yangiliklar'
+    | '/api/public/telegram/price-bot'
     | '/api/public/telegram/webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -111,6 +122,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/savatcha'
     | '/yangiliklar'
+    | '/api/public/telegram/price-bot'
     | '/api/public/telegram/webhook'
   id:
     | '__root__'
@@ -121,6 +133,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/savatcha'
     | '/yangiliklar'
+    | '/api/public/telegram/price-bot'
     | '/api/public/telegram/webhook'
   fileRoutesById: FileRoutesById
 }
@@ -132,6 +145,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   SavatchaRoute: typeof SavatchaRoute
   YangiliklarRoute: typeof YangiliklarRoute
+  ApiPublicTelegramPriceBotRoute: typeof ApiPublicTelegramPriceBotRoute
   ApiPublicTelegramWebhookRoute: typeof ApiPublicTelegramWebhookRoute
 }
 
@@ -193,6 +207,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicTelegramWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/telegram/price-bot': {
+      id: '/api/public/telegram/price-bot'
+      path: '/api/public/telegram/price-bot'
+      fullPath: '/api/public/telegram/price-bot'
+      preLoaderRoute: typeof ApiPublicTelegramPriceBotRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -204,6 +225,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   SavatchaRoute: SavatchaRoute,
   YangiliklarRoute: YangiliklarRoute,
+  ApiPublicTelegramPriceBotRoute: ApiPublicTelegramPriceBotRoute,
   ApiPublicTelegramWebhookRoute: ApiPublicTelegramWebhookRoute,
 }
 export const routeTree = rootRouteImport
