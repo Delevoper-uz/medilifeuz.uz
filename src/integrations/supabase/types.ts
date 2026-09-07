@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      bot_group_sessions: {
+        Row: {
+          chat_id: number
+          chosen: Json
+          created_at: string
+          items: Json
+          step: string
+          updated_at: string
+        }
+        Insert: {
+          chat_id: number
+          chosen?: Json
+          created_at?: string
+          items?: Json
+          step?: string
+          updated_at?: string
+        }
+        Update: {
+          chat_id?: number
+          chosen?: Json
+          created_at?: string
+          items?: Json
+          step?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       bot_shared_lists: {
         Row: {
           chat_id: number | null
@@ -71,6 +98,80 @@ export type Database = {
           name?: string
           phone?: string | null
           yandex_map_url?: string | null
+        }
+        Relationships: []
+      }
+      doctor_appointments: {
+        Row: {
+          created_at: string
+          customer_name: string
+          customer_phone: string
+          doctor_id: string | null
+          doctor_name: string
+          id: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          customer_name: string
+          customer_phone: string
+          doctor_id?: string | null
+          doctor_name: string
+          id?: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          customer_name?: string
+          customer_phone?: string
+          doctor_id?: string | null
+          doctor_name?: string
+          id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "doctor_appointments_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      doctors: {
+        Row: {
+          branch: string | null
+          created_at: string
+          id: string
+          image_url: string | null
+          name: string
+          phone: string | null
+          schedule: string | null
+          specialty: string | null
+          updated_at: string
+        }
+        Insert: {
+          branch?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          name: string
+          phone?: string | null
+          schedule?: string | null
+          specialty?: string | null
+          updated_at?: string
+        }
+        Update: {
+          branch?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          name?: string
+          phone?: string | null
+          schedule?: string | null
+          specialty?: string | null
+          updated_at?: string
         }
         Relationships: []
       }
