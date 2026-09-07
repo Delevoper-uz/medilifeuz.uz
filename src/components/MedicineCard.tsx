@@ -43,7 +43,7 @@ export function MedicineCard({ m }: { m: Medicine }) {
   };
 
   return (
-    <Card className="overflow-hidden flex flex-col group hover:shadow-lg transition-shadow">
+    <Card className="overflow-hidden flex flex-col group hover:shadow-lg lift-hover">
       <div className="aspect-square bg-muted overflow-hidden flex items-center justify-center p-2">
         {m.image_url ? (
           <img

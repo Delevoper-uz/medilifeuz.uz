@@ -34,7 +34,7 @@ function BranchesPage() {
             const q = encodeURIComponent(b.address || b.name || "Namangan");
             const yandexEmbed = b.yandex_map_url ? `https://yandex.uz/map-widget/v1/?text=${q}&z=15&l=map` : null;
             return (
-              <Card key={b.id} className="overflow-hidden">
+              <Card key={b.id} className="overflow-hidden reveal-up lift-hover">
                 {b.image_url && (
                   <img
                     src={b.image_url}

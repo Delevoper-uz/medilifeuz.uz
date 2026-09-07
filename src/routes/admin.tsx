@@ -628,7 +628,7 @@ function PriceBotAdmin() {
       <div className="rounded-lg border bg-card p-4 reveal-up">
         <h3 className="font-semibold mb-2">Narx boti ishga tushirilgan</h3>
         <p className="text-sm text-muted-foreground">
-          Yangi bot ulanган. Narxlarni to'g'ridan-to'g'ri Telegram orqali o'zgartirish tartibi:
+          Yangi bot ulangan. Narxlarni to'g'ridan-to'g'ri Telegram orqali o'zgartirish tartibi:
         </p>
         <ol className="mt-3 space-y-2 list-decimal pl-5 text-sm">
           {steps.map((t) => (

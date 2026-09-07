@@ -96,18 +96,18 @@ function Home() {
       <section className="grid md:grid-cols-2 gap-10 items-center justify-items-center py-10 md:py-16">
         <div className="w-full max-w-xl space-y-6 text-center flex flex-col items-center">
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.05]">
-            <span className="text-primary">MediLife</span>
+            <span className="shimmer-text">MediLife</span>
             <span className="block mt-2">{t("home.hero_title")}</span>
           </h1>
           <p className="text-lg md:text-xl text-muted-foreground max-w-xl mx-auto">{t("home.hero_sub")}</p>
           <div className="flex flex-wrap justify-center gap-3 max-w-full">
-            <Link to="/dorilar"><Button size="lg" className="gap-2">{t("home.cta")} <ArrowRight className="h-4 w-4" /></Button></Link>
-            <Link to="/filiallar"><Button size="lg" variant="outline">{t("nav.branches")}</Button></Link>
+            <Link to="/dorilar"><Button size="lg" className="gap-2 lift-hover">{t("home.cta")} <ArrowRight className="h-4 w-4 nudge-x" /></Button></Link>
+            <Link to="/filiallar"><Button size="lg" variant="outline" className="lift-hover">{t("nav.branches")}</Button></Link>
           </div>
         </div>
         <div className="flex w-full justify-center">
-          <div className="relative mx-auto max-w-full">
-            <div className="absolute inset-0 gradient-primary rounded-full blur-3xl opacity-40 scale-110" />
+          <div className="relative mx-auto max-w-full float-slow">
+            <div className="absolute inset-0 gradient-primary rounded-full blur-3xl glow-pulse" />
             <img src={logo} alt="MediLife" className="relative mx-auto block w-64 h-64 sm:w-80 sm:h-80 md:w-[420px] md:h-[420px] lg:w-[480px] lg:h-[480px] max-w-full object-cover rounded-3xl shadow-2xl" />
           </div>
         </div>
