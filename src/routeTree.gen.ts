@@ -14,6 +14,7 @@ import { Route as SavatchaRouteImport } from './routes/savatcha'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as FiliallarRouteImport } from './routes/filiallar'
 import { Route as DorilarRouteImport } from './routes/dorilar'
+import { Route as DoktorKorigiRouteImport } from './routes/doktor-korigi'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiPublicTelegramWebhookRouteImport } from './routes/api/public/telegram/webhook'
@@ -44,6 +45,11 @@ const DorilarRoute = DorilarRouteImport.update({
   path: '/dorilar',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DoktorKorigiRoute = DoktorKorigiRouteImport.update({
+  id: '/doktor-korigi',
+  path: '/doktor-korigi',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -70,6 +76,7 @@ const ApiPublicTelegramPriceBotRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/doktor-korigi': typeof DoktorKorigiRoute
   '/dorilar': typeof DorilarRoute
   '/filiallar': typeof FiliallarRoute
   '/login': typeof LoginRoute
@@ -81,6 +88,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/doktor-korigi': typeof DoktorKorigiRoute
   '/dorilar': typeof DorilarRoute
   '/filiallar': typeof FiliallarRoute
   '/login': typeof LoginRoute
@@ -93,6 +101,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/doktor-korigi': typeof DoktorKorigiRoute
   '/dorilar': typeof DorilarRoute
   '/filiallar': typeof FiliallarRoute
   '/login': typeof LoginRoute
@@ -106,6 +115,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/doktor-korigi'
     | '/dorilar'
     | '/filiallar'
     | '/login'
@@ -117,6 +127,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/admin'
+    | '/doktor-korigi'
     | '/dorilar'
     | '/filiallar'
     | '/login'
@@ -128,6 +139,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/admin'
+    | '/doktor-korigi'
     | '/dorilar'
     | '/filiallar'
     | '/login'
@@ -140,6 +152,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
+  DoktorKorigiRoute: typeof DoktorKorigiRoute
   DorilarRoute: typeof DorilarRoute
   FiliallarRoute: typeof FiliallarRoute
   LoginRoute: typeof LoginRoute
@@ -186,6 +199,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DorilarRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/doktor-korigi': {
+      id: '/doktor-korigi'
+      path: '/doktor-korigi'
+      fullPath: '/doktor-korigi'
+      preLoaderRoute: typeof DoktorKorigiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin': {
       id: '/admin'
       path: '/admin'
@@ -220,6 +240,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
+  DoktorKorigiRoute: DoktorKorigiRoute,
   DorilarRoute: DorilarRoute,
   FiliallarRoute: FiliallarRoute,
   LoginRoute: LoginRoute,
