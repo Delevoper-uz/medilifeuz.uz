@@ -152,3 +152,45 @@
 @media (prefers-reduced-motion: reduce) {
   .reveal-up, .reveal-left, .reveal-right { animation: none; }
 }
+
+/* Doimiy harakatdagi yengil animatsiyalar */
+@keyframes float-y {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+@keyframes glow-pulse {
+  0%, 100% { opacity: 0.28; transform: scale(1.05); }
+  50% { opacity: 0.5; transform: scale(1.15); }
+}
+@keyframes nudge-x {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(4px); }
+}
+@keyframes shimmer-x {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.45; transform: scale(0.85); }
+}
+
+.float-slow { animation: float-y 6s ease-in-out infinite; }
+.glow-pulse { animation: glow-pulse 5s ease-in-out infinite; }
+.nudge-x { animation: nudge-x 1.6s ease-in-out infinite; }
+.pulse-dot { animation: pulse-dot 1.4s ease-in-out infinite; }
+.shimmer-text {
+  background: linear-gradient(90deg, var(--foreground) 0%, var(--primary) 35%, var(--primary-glow) 50%, var(--primary) 65%, var(--foreground) 100%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: shimmer-x 6s linear infinite;
+}
+.lift-hover { transition: transform 0.25s ease, box-shadow 0.25s ease; }
+.lift-hover:hover { transform: translateY(-4px); }
+
+@media (prefers-reduced-motion: reduce) {
+  .float-slow, .glow-pulse, .nudge-x, .pulse-dot, .shimmer-text { animation: none; }
+  .shimmer-text { color: var(--foreground); background: none; -webkit-background-clip: border-box; background-clip: border-box; }
+}
