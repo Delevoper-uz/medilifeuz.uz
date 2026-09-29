@@ -29,12 +29,14 @@ function publicClient() {
 
 /** Saytda ko'rsatiladigan doktorlar ro'yxati. */
 export const listDoctors = createServerFn({ method: "GET" }).handler(async (): Promise<Doctor[]> => {
-  const { data } = await publicClient()
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data } = await (supabaseAdmin as unknown as { from: (t: string) => any })
     .from("doctors")
     .select("id, name, specialty, image_url, phone, branch, schedule")
     .order("created_at", { ascending: false });
   return (data ?? []) as Doctor[];
 });
+void publicClient;
 
 const BookSchema = z.object({
   doctor_id: z.string().uuid(),
