@@ -1,54 +1,156 @@
 import { useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { ImagePlus, Sparkles, Loader2, X } from "lucide-react";
+import { ImagePlus, Sparkles, Loader2, X, Send, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MedicineCard, type Medicine } from "@/components/MedicineCard";
-import { analyzeMedicineImage, getBotSharedList, type AiSearchResult } from "@/lib/ai-search.functions";
+import {
+  analyzeMedicineImage,
+  getBotSharedList,
+  sendPrescriptionToOperators,
+  type AiGroup,
+  type AiSearchResult,
+} from "@/lib/ai-search.functions";
 
-/** Ro'yxatni har xil tartibda ko'rsatish uchun aralashtiradi. */
-function shuffle<T>(arr: T[]): T[] {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j] as T, a[i] as T];
+/** "Ha / Yo'q" so'rab, raqam bo'yicha tanlash bloki (har bir retsept qatori uchun). */
+function GroupPicker({ index, group }: { index: number; group: AiGroup }) {
+  const [answer, setAnswer] = useState<"idle" | "yes" | "no">("idle");
+  const [picked, setPicked] = useState<number[]>([]);
+
+  if (!group.candidates.length) {
+    return (
+      <div className="rounded-md border p-3 text-sm">
+        <p className="font-medium">
+          {index}. {group.query}
+        </p>
+        <p className="text-muted-foreground">Bazada o'xshash dori topilmadi.</p>
+      </div>
+    );
   }
-  return a;
+
+  const toggle = (n: number) => setPicked((p) => (p.includes(n) ? p.filter((x) => x !== n) : [...p, n]));
+
+  return (
+    <div className="rounded-md border p-3 space-y-3 reveal-up">
+      <p className="font-medium">
+        {index}. Retseptda: <span className="text-primary">{group.query}</span>
+        {!group.exact && <span className="ml-2 text-xs text-muted-foreground">(o'xshash nomlar)</span>}
+      </p>
+      <ol className="space-y-1 text-sm">
+        {group.candidates.map((c, i) => (
+          <li key={c.id} className="flex items-center gap-2">
+            {answer === "yes" ? (
+              <Button
+                size="sm"
+                variant={picked.includes(i) ? "default" : "outline"}
+                className="h-7 w-9 shrink-0 px-0"
+                onClick={() => toggle(i)}
+              >
+                {picked.includes(i) ? <Check className="h-4 w-4" /> : i + 1}
+              </Button>
+            ) : (
+              <span className="w-6 shrink-0 text-muted-foreground">{i + 1}.</span>
+            )}
+            <span className="min-w-0 break-words">
+              {c.name} — {Number(c.price).toLocaleString("uz-UZ")} so'm
+            </span>
+          </li>
+        ))}
+      </ol>
+
+      {answer === "idle" && (
+        <div className="space-y-2">
+          <p className="text-sm">Sizning o'ylashingizcha, bu yerda siz qidirayotgan dori bormi?</p>
+          <div className="flex flex-wrap gap-2">
+            <Button size="sm" onClick={() => setAnswer("yes")}>
+              Ha, bor
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => setAnswer("no")}>
+              Yo'q
+            </Button>
+          </div>
+        </div>
+      )}
+      {answer === "yes" && picked.length === 0 && (
+        <p className="text-sm text-muted-foreground">Qaysi raqamda turganini belgilang.</p>
+      )}
+      {answer === "no" && (
+        <p className="text-sm text-muted-foreground">
+          Tushunarli.{" "}
+          <button className="underline" onClick={() => setAnswer("idle")}>
+            Qayta ko'rish
+          </button>
+        </p>
+      )}
+      {picked.length > 0 && (
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+          {picked.map((i) => {
+            const m = group.candidates[i];
+            return m ? <MedicineCard key={m.id} m={m as unknown as Medicine} /> : null;
+          })}
+        </div>
+      )}
+    </div>
+  );
 }
 
-/** Dorilar ro'yxati rasmini yuklab, AI orqali tahlil qilish bloki. */
+/** Retsept / dorilar ro'yxati rasmini AI orqali tahlil qilish bloki. */
 export function AiListSearch() {
   const analyze = useServerFn(analyzeMedicineImage);
   const fromBot = useServerFn(getBotSharedList);
+  const toOperators = useServerFn(sendPrescriptionToOperators);
   const [botLoading, setBotLoading] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<AiSearchResult | null>(null);
+
+  /** Rasmni kichraytirib yuboramiz — AI tezroq javob beradi. */
+  const shrink = (file: File) =>
+    new Promise<string>((resolve, reject) => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        const max = 1600;
+        const k = Math.min(1, max / Math.max(img.width, img.height));
+        const c = document.createElement("canvas");
+        c.width = Math.round(img.width * k);
+        c.height = Math.round(img.height * k);
+        c.getContext("2d")?.drawImage(img, 0, 0, c.width, c.height);
+        URL.revokeObjectURL(url);
+        resolve(c.toDataURL("image/jpeg", 0.85));
+      };
+      img.onerror = () => reject(new Error("Rasm o'qilmadi"));
+      img.src = url;
+    });
 
   const onFile = async (file: File) => {
     if (!file.type.startsWith("image/")) {
       toast.error("Faqat rasm yuklash mumkin");
       return;
     }
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("Rasm 5MB dan kichik bo'lishi kerak");
+    if (file.size > 15 * 1024 * 1024) {
+      toast.error("Rasm 15MB dan kichik bo'lishi kerak");
       return;
     }
-    const dataUrl = await new Promise<string>((resolve, reject) => {
-      const fr = new FileReader();
-      fr.onload = () => resolve(String(fr.result));
-      fr.onerror = () => reject(new Error("Rasm o'qilmadi"));
-      fr.readAsDataURL(file);
-    });
+    let dataUrl: string;
+    try {
+      dataUrl = await shrink(file);
+    } catch {
+      toast.error("Rasm o'qilmadi");
+      return;
+    }
     setPreview(dataUrl);
     setResult(null);
+    setSent(false);
     setLoading(true);
     try {
       const res = await analyze({ data: { imageDataUrl: dataUrl } });
       setResult(res);
       if (res.ok) toast.success(res.message);
-      else toast.warning(res.message, { duration: 8000 });
+      else toast.warning(res.message, { duration: 6000 });
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Tahlil qilinmadi");
     } finally {
@@ -59,17 +161,36 @@ export function AiListSearch() {
   const reset = () => {
     setPreview(null);
     setResult(null);
+    setSent(false);
     if (inputRef.current) inputRef.current.value = "";
   };
+
+  const sendToOperators = async () => {
+    if (!preview) return;
+    setSending(true);
+    try {
+      const r = await toOperators({ data: { imageDataUrl: preview, note: result?.missing.join(", ") } });
+      if (r.ok) {
+        setSent(true);
+        toast.success("Rasm operatorlarga yuborildi");
+      } else toast.error("Yuborib bo'lmadi");
+    } catch {
+      toast.error("Yuborib bo'lmadi");
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const showOperatorBtn = !!preview && !!result && (!result.ok || result.missing.length > 0);
 
   return (
     <div className="mb-6 rounded-lg border bg-card p-4">
       <div className="flex flex-wrap items-center gap-3">
         <Sparkles className="h-5 w-5 text-primary" />
         <div className="mr-auto">
-          <p className="font-semibold">AI bilan ro'yxatdan qidirish</p>
+          <p className="font-semibold">AI bilan retseptdan qidirish</p>
           <p className="text-sm text-muted-foreground">
-            Dorilar ro'yxati rasmini yuklang — AI o'qib, bazadagi dorilarni ko'rsatadi.
+            Retsept yoki dorilar ro'yxati rasmini yuklang — AI bir necha soniyada o'qib, mos dorilarni ko'rsatadi.
           </p>
         </div>
         <input
@@ -96,7 +217,7 @@ export function AiListSearch() {
               const res = await fromBot();
               setPreview(null);
               setResult(res);
-              if (res.found.length) toast.success(res.message);
+              if (res.ok) toast.success(res.message);
               else toast.warning(res.message);
             } catch (e) {
               toast.error(e instanceof Error ? e.message : "Ro'yxat olinmadi");
@@ -117,35 +238,25 @@ export function AiListSearch() {
 
       {preview && (
         <div className="mt-4 flex gap-4 items-start">
-          <img src={preview} alt="Yuklangan ro'yxat" className="h-28 w-28 rounded-md object-cover border" />
-          {loading && <p className="text-sm text-muted-foreground">AI tahlil qilmoqda...</p>}
+          <img src={preview} alt="Yuklangan retsept" className="h-28 w-28 rounded-md object-cover border" />
+          {loading && <p className="text-sm text-muted-foreground">AI retseptni o'qimoqda...</p>}
         </div>
       )}
 
       {result && !loading && (
         <div className="mt-4 space-y-3">
-          {result.names.length > 0 && (
-            <p className="text-sm text-muted-foreground">
-              AI o'qidi: <span className="text-foreground">{result.names.join(", ")}</span>
-            </p>
-          )}
-          {result.found.length > 0 && (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-              {shuffle(result.found).map((m, i) => (
-                <div key={m.id} className="reveal-up" style={{ animationDelay: `${Math.min(i, 8) * 60}ms` }}>
-                  <MedicineCard m={m as unknown as Medicine} />
-                </div>
-              ))}
+          {!result.ok && <p className="text-sm text-muted-foreground">{result.message}</p>}
+          {result.groups.map((g, i) => (
+            <GroupPicker key={`${g.query}-${i}`} index={i + 1} group={g} />
+          ))}
+          {showOperatorBtn && (
+            <div className="flex flex-wrap items-center gap-2 pt-1">
+              <p className="text-sm text-muted-foreground">Kerakli dori topilmadimi?</p>
+              <Button size="sm" variant="outline" className="gap-2" disabled={sending || sent} onClick={sendToOperators}>
+                {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                {sent ? "Operatorga yuborildi" : "Operatorga yuborish"}
+              </Button>
             </div>
-          )}
-          {result.missing.length > 0 && (
-            <p className="text-sm text-muted-foreground">Topilmadi: {result.missing.join(", ")}</p>
-          )}
-          {!result.ok && result.sentToTelegram && (
-            <p className="text-sm text-muted-foreground">
-              Rasm operatorlarga yuborildi. Ular ro'yxatni matn ko'rinishida yozib yuborsa, bot topilgan dorilarni
-              qaytaradi.
-            </p>
           )}
         </div>
       )}
