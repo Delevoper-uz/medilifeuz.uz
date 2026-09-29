@@ -79,35 +79,33 @@ export const Route = createFileRoute("/api/public/telegram/webhook")({
             return Response.json({ ok: true });
           }
 
-          if (dataStr === "ai_share") {
-            const src: string = cb.message?.text ?? "";
-            const names = src
-              .split("\n")
-              .map((l) => /^\s*\d+\.\s*(.+?)\s*(?:—|\()/.exec(l)?.[1]?.trim())
-              .filter((n): n is string => !!n && n.length >= 3);
-            if (names.length) {
-              const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-              await (supabaseAdmin as unknown as { from: (t: string) => any })
-                .from("bot_shared_lists")
-                .insert({ chat_id: cb.message?.chat?.id ?? null, names });
+          if (dataStr === "ai_share" || dataStr === "ai_done" || dataStr === "ai_more") {
+            const gChat = cb.message?.chat?.id;
+            await answer(
+              dataStr === "ai_share" ? "✅ Ro'yxat saytga yuborildi" : dataStr === "ai_done" ? "✅ Yakunlandi" : "➕ Keyingi dori",
+            );
+            const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+            const gdb = supabaseAdmin as unknown as { from: (t: string) => any };
+            const { data: sess } = gChat
+              ? await gdb.from("bot_group_sessions").select("*").eq("chat_id", gChat).maybeSingle()
+              : { data: null };
+            const names: string[] = sess?.chosen ?? [];
+            if (dataStr === "ai_more") {
+              if (gChat) await gdb.from("bot_group_sessions").upsert({ chat_id: gChat, items: [], chosen: names, step: "more" }, { onConflict: "chat_id" });
+              if (gChat) await send(token, { chat_id: gChat, text: "➕ Yana dori nomini yuboring." });
+              return Response.json({ ok: true });
             }
-            await answer("✅ Ro'yxat saytga yuborildi");
-            await send(token, {
-              chat_id: cb.message?.chat?.id,
-              text: `✅ Bo'ldi shular (${names.length} ta). Saytdagi "Botdan kelgan ro'yxat" tugmasini bosib to'liq ko'rishingiz mumkin.`,
-            });
-            return Response.json({ ok: true });
-          }
-
-          if (dataStr === "ai_done" || dataStr === "ai_more") {
-            await answer(dataStr === "ai_done" ? "✅ Buyurtma yakunlandi" : "➕ Keyingi dorini yuboring");
-            if (cb.message?.chat?.id) {
+            if (dataStr === "ai_share" && names.length) {
+              await gdb.from("bot_shared_lists").insert({ chat_id: gChat ?? null, names });
+            }
+            if (gChat) {
+              await gdb.from("bot_group_sessions").upsert({ chat_id: gChat, items: [], chosen: [], step: "idle" }, { onConflict: "chat_id" });
               await send(token, {
-                chat_id: cb.message.chat.id,
+                chat_id: gChat,
                 text:
-                  dataStr === "ai_done"
-                    ? "✅ Bo'ldi. Buyurtmangiz qabul qilindi, operator siz bilan bog'lanadi."
-                    : "➕ Yana dori nomini yoki rasmini yuboring.",
+                  dataStr === "ai_share"
+                    ? `✅ Bo'ldi shular (${names.length} ta):\n${names.map((n, i) => `${i + 1}. ${n}`).join("\n")}\n\nSaytdagi "Botdan kelgan ro'yxat" tugmasi orqali ko'rish mumkin.`
+                    : "✅ Bo'ldi. Buyurtmangiz qabul qilindi, operator siz bilan bog'lanadi.",
               });
             }
             return Response.json({ ok: true });
@@ -121,38 +119,68 @@ export const Route = createFileRoute("/api/public/telegram/webhook")({
         if (!chatId) return Response.json({ ok: true });
 
 
-        // Guruhga matn yozilsa — matndagi dorilarni bazadan izlab javob qaytaramiz.
+        // Guruh: 1) dorilarni topadi 2) raqam so'raydi 3) tanlangandan keyin tugmalar.
         const chatType: string = message?.chat?.type ?? "private";
         const text: string = message?.text ?? message?.caption ?? "";
         if (chatType.includes("group") && text && !text.startsWith("/")) {
+          const { supabaseAdmin: sa } = await import("@/integrations/supabase/client.server");
+          const gdb = sa as unknown as { from: (t: string) => any };
+          const { data: sess } = await gdb.from("bot_group_sessions").select("*").eq("chat_id", chatId).maybeSingle();
+          const items: { name: string; name_cyrl?: string | null; price: number }[] = sess?.items ?? [];
+          const chosen: string[] = sess?.chosen ?? [];
+
+          const num = /^\s*(\d{1,3})\s*$/.exec(text);
+          if (num && sess?.step === "choose" && items.length) {
+            const idx = Number(num[1]) - 1;
+            const pick = items[idx];
+            if (!pick) {
+              await send(token, { chat_id: chatId, text: `❗ 1 dan ${items.length} gacha raqam yuboring.` });
+              return Response.json({ ok: true });
+            }
+            const nextChosen = [...chosen, pick.name];
+            await gdb.from("bot_group_sessions").upsert(
+              { chat_id: chatId, items, chosen: nextChosen, step: "chosen" },
+              { onConflict: "chat_id" },
+            );
+            await send(token, {
+              chat_id: chatId,
+              text: `🛒 Savatga qo'shildi: ${pick.name}${pick.name_cyrl ? ` (${pick.name_cyrl})` : ""} — ${pick.price} so'm\n\nTanlanganlar: ${nextChosen.length} ta`,
+              reply_markup: {
+                inline_keyboard: [
+                  [
+                    { text: "➕ Yana qo'shamiz", callback_data: "ai_more" },
+                    { text: "✅ Bo'ldi shu xolos", callback_data: "ai_done" },
+                  ],
+                  [{ text: "✅ BO'LDI SHULAR", callback_data: "ai_share" }],
+                ],
+              },
+            });
+            return Response.json({ ok: true });
+          }
+          if (num) return Response.json({ ok: true });
+
           const { extractCandidateNames, lookupMedicines } = await import("@/lib/ai-search.functions");
           const names = extractCandidateNames(text);
           if (!names.length) return Response.json({ ok: true });
           const { found, missing } = await lookupMedicines(names);
-          const lines = found
-            .slice(0, 40)
-            .map((m, i) => `${i + 1}. ${m.name}${m.name_cyrl ? ` (${m.name_cyrl})` : ""} — ${m.price} so'm`);
-          const first = found[0];
-          const reply = found.length
-            ? `🔎 Topilgan dorilar (${found.length}):\n${lines.join("\n")}${
-                missing.length ? `\n\n❌ Topilmadi: ${missing.slice(0, 20).join(", ")}` : ""
-              }\n\n🛒 Savatga qo'shildi: ${first?.name ?? ""}`
-            : `🛒 Savatga qo'shildi: ${names[0]}\n(AI aniq tushunmadi, 1-dori qo'shildi)`;
+          const list = found.slice(0, 30).map((m) => ({ name: m.name, name_cyrl: m.name_cyrl ?? null, price: m.price }));
+          if (!list.length) {
+            await send(token, { chat_id: chatId, text: `❌ Bazadan topilmadi: ${names.slice(0, 20).join(", ")}` });
+            return Response.json({ ok: true });
+          }
+          await gdb.from("bot_group_sessions").upsert(
+            { chat_id: chatId, items: list, chosen: sess?.step === "more" ? chosen : [], step: "choose" },
+            { onConflict: "chat_id" },
+          );
+          const lines = list.map((m, i) => `${i + 1}. ${m.name}${m.name_cyrl ? ` (${m.name_cyrl})` : ""} — ${m.price} so'm`);
           await send(token, {
             chat_id: chatId,
-            text: reply,
-            reply_markup: {
-              inline_keyboard: [
-                [
-                  { text: "➕ Yana qo'shamiz", callback_data: "ai_more" },
-                  { text: "✅ Bo'ldi shu xolos", callback_data: "ai_done" },
-                ],
-                [{ text: "✅ BO'LDI SHULAR", callback_data: "ai_share" }],
-              ],
-            },
+            text:
+              `🔎 Topilgan dorilar (${list.length}):\n${lines.join("\n")}` +
+              (missing.length ? `\n\n❌ Topilmadi: ${missing.slice(0, 20).join(", ")}` : "") +
+              `\n\n❓ Qaysi biri kerak? Raqamini yuboring (masalan: 1).`,
           });
           return Response.json({ ok: true });
-
         }
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");

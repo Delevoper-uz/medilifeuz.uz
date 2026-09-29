@@ -190,7 +190,8 @@ export const analyzeMedicineImage = createServerFn({ method: "POST" })
 
 /** Telegram botdan "BO'LDI SHULAR" bilan yuborilgan oxirgi ro'yxatni qaytaradi. */
 export const getBotSharedList = createServerFn({ method: "GET" }).handler(async (): Promise<AiSearchResult> => {
-  const supabase = publicClient() as unknown as { from: (t: string) => any };
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const supabase = supabaseAdmin as unknown as { from: (t: string) => any };
   const { data } = await supabase
     .from("bot_shared_lists")
     .select("names, created_at")

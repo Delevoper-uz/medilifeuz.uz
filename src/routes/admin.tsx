@@ -36,6 +36,7 @@ import {
   adminUploadMedia,
 } from "@/lib/admin.functions";
 import { adminListPresence } from "@/lib/presence.functions";
+import { adminDeleteDoctor, adminListAppointments, adminListDoctors, adminSaveDoctor, adminSetAppointmentStatus } from "@/lib/admin-doctors.functions";
 import * as XLSX from "xlsx";
 import { matchesSearch } from "@/lib/search";
 
@@ -129,6 +130,8 @@ function AdminPage() {
           <TabsTrigger value="users">Foydalanuvchilar</TabsTrigger>
           <TabsTrigger value="activity">Foydalanuvchilar Faoliyati</TabsTrigger>
           <TabsTrigger value="pricebot">Narx boti</TabsTrigger>
+          <TabsTrigger value="doctors">Doktorlar</TabsTrigger>
+          <TabsTrigger value="appointments">Ko'rikka yozilishlar</TabsTrigger>
         </TabsList>
         <TabsContent value="news" className="mt-6"><NewsAdmin /></TabsContent>
         <TabsContent value="medicines" className="mt-6"><MedicinesAdmin /></TabsContent>
@@ -137,6 +140,8 @@ function AdminPage() {
         <TabsContent value="users" className="mt-6"><UsersAdmin /></TabsContent>
         <TabsContent value="activity" className="mt-6"><ActivityAdmin /></TabsContent>
         <TabsContent value="pricebot" className="mt-6"><PriceBotAdmin /></TabsContent>
+        <TabsContent value="doctors" className="mt-6"><DoctorsAdmin /></TabsContent>
+        <TabsContent value="appointments" className="mt-6"><AppointmentsAdmin /></TabsContent>
       </Tabs>
     </div>
   );
@@ -365,6 +370,81 @@ function MedicinesByLang({ lang }: { lang: "latin" | "cyrillic" }) {
 }
 
 /* ---------------- BRANCHES ---------------- */
+function DoctorsAdmin() {
+  const listFn = useServerFn(adminListDoctors);
+  const saveFn = useServerFn(adminSaveDoctor);
+  const deleteFn = useServerFn(adminDeleteDoctor);
+  const { data = [], refetch } = useQuery({ queryKey: ["admin-doctors"], queryFn: () => listFn({ data: {} }) });
+  const [editing, setEditing] = useState<any | null>(null);
+  const [open, setOpen] = useState(false);
+  const f = (k: string, label: string) => (
+    <div><Label>{label}</Label><Input value={editing?.[k] ?? ""} onChange={(e) => setEditing({ ...editing, [k]: e.target.value })} /></div>
+  );
+  const save = async () => {
+    try {
+      await saveFn({ data: editing });
+      toast.success("Saqlandi"); setOpen(false); refetch();
+    } catch (e: any) { toast.error(e?.message || "Saqlashda xatolik"); }
+  };
+  return (
+    <div className="space-y-4">
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogTrigger asChild><Button onClick={() => setEditing({ name: "", specialty: "", image_url: "", phone: "", branch: "", schedule: "" })} className="gap-1"><Plus className="h-4 w-4" /> Doktor qo'shish</Button></DialogTrigger>
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
+          <DialogHeader><DialogTitle>Doktor</DialogTitle></DialogHeader>
+          {editing && <div className="space-y-3">
+            {f("name", "Ism familiya")}
+            {f("specialty", "Mutaxassislik")}
+            <div><Label>Rasm</Label><ImageInput value={editing.image_url ?? ""} onChange={(v) => setEditing({ ...editing, image_url: v })} /></div>
+            {f("phone", "Telefon")}
+            {f("branch", "Filial")}
+            {f("schedule", "Ish vaqti")}
+            <Button onClick={() => void save()} className="w-full">Saqlash</Button>
+          </div>}
+        </DialogContent>
+      </Dialog>
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {data.map((d: any) => (
+          <Card key={d.id} className="p-4 space-y-1">
+            {d.image_url && <img src={d.image_url} alt={d.name} className="h-32 w-full object-cover rounded" />}
+            <div className="font-semibold">{d.name}</div>
+            <div className="text-sm text-muted-foreground">{d.specialty} {d.branch ? `· ${d.branch}` : ""}</div>
+            <div className="flex gap-2 pt-2">
+              <Button size="sm" variant="outline" onClick={() => { setEditing(d); setOpen(true); }}><Pencil className="h-4 w-4" /></Button>
+              <Button size="sm" variant="destructive" onClick={async () => { if (!confirm("O'chirilsinmi?")) return; await deleteFn({ data: { id: d.id } }); refetch(); }}><Trash2 className="h-4 w-4" /></Button>
+            </div>
+          </Card>
+        ))}
+        {data.length === 0 && <p className="text-muted-foreground">Doktorlar yo'q</p>}
+      </div>
+    </div>
+  );
+}
+
+function AppointmentsAdmin() {
+  const listFn = useServerFn(adminListAppointments);
+  const statusFn = useServerFn(adminSetAppointmentStatus);
+  const { data = [], refetch } = useQuery({ queryKey: ["admin-appointments"], queryFn: () => listFn({ data: {} }), refetchInterval: 15000 });
+  const labels: Record<string, string> = { pending: "Kutilmoqda", confirmed: "Tasdiqlandi", done: "Bajarildi", cancelled: "Bekor qilindi" };
+  return (
+    <div className="space-y-3">
+      {data.length === 0 && <p className="text-muted-foreground">Hozircha yozilishlar yo'q</p>}
+      {data.map((a: any) => (
+        <Card key={a.id} className="p-4 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <div className="font-semibold">{a.customer_name} — <a href={`tel:${a.customer_phone}`} className="text-primary">{a.customer_phone}</a></div>
+            <div className="text-sm text-muted-foreground">Doktor: {a.doctor_name} · {new Date(a.created_at).toLocaleString("uz-UZ")}</div>
+          </div>
+          <Select value={a.status} onValueChange={async (v) => { await statusFn({ data: { id: a.id, status: v as any } }); refetch(); }}>
+            <SelectTrigger className="w-44"><SelectValue /></SelectTrigger>
+            <SelectContent>{Object.entries(labels).map(([k, l]) => <SelectItem key={k} value={k}>{l}</SelectItem>)}</SelectContent>
+          </Select>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
 function BranchesAdmin() {
   const listFn = useServerFn(adminListBranches);
   const saveFn = useServerFn(adminSaveBranch);

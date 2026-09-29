@@ -14,6 +14,7 @@ const NAV: { to: string; key: string; exact?: boolean }[] = [
   { to: "/dorilar", key: "nav.medicines" },
   { to: "/yangiliklar", key: "nav.news" },
   { to: "/filiallar", key: "nav.branches" },
+  { to: "/doktor-korigi", key: "nav.doctors" },
 ];
 
 
