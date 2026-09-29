@@ -193,9 +193,9 @@ export const Route = createFileRoute("/api/public/telegram/price-bot")({
             await saveSession(s);
             await tg(token, "sendMessage", {
               chat_id: chatId,
-              text: `💰 Narxlarni shu tartibda yuboring:\n${s.items
+              text: `${s.items
                 .map((it, i) => `${i + 1}. ${it.found ? it.name : it.query}`)
-                .join("\n")}\n\nMisol:\n1. 12000\n2. 20000\n3. 3000`,
+                .join("\n")}\n\n✏️ O'zgartirilgan narxini yuboring`,
             });
             return Response.json({ ok: true });
           }
