@@ -358,9 +358,8 @@ function MedicinesByLang({ lang }: { lang: "latin" | "cyrillic" }) {
       </div>
       <Input placeholder="Qidirish (nomi bo'yicha)..." value={search} onChange={(e) => setSearch(e.target.value)} className="max-w-sm" />
       <div className="text-xs text-muted-foreground">Jami: ~{totalCount.toLocaleString("ru-RU")} ta {label} dori · Ko'rsatilmoqda: {data.length} ta (qidiruv orqali toping)</div>
-...
+      <div className="grid md:grid-cols-2 gap-3">
         {data.map((m: any) => (
-
           <Card key={m.id} className="p-3 flex gap-3">
             {m.image_url && <img src={m.image_url} alt="" className="h-16 w-16 object-cover rounded" />}
             <div className="flex-1 min-w-0">
