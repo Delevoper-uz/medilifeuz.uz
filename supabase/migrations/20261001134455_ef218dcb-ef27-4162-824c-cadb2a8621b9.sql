@@ -1,0 +1,1 @@
+CREATE INDEX IF NOT EXISTS medicines_created_at_id_idx ON public.medicines (created_at DESC, id DESC);

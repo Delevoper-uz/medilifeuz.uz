@@ -246,13 +246,22 @@ function MedicinesByLang({ lang }: { lang: "latin" | "cyrillic" }) {
   const deleteFn = useServerFn(adminDeleteMedicine);
   const bulkFn = useServerFn(adminBulkImportMedicines);
   const deleteAllFn = useServerFn(adminDeleteAllMedicines);
-  const { data: allData = [], refetch } = useQuery({ queryKey: ["admin-meds"], queryFn: () => listFn({ data: {} }) });
-  const data = (allData as any[]).filter((m) => (m.language ?? "latin") === lang);
+  const [search, setSearch] = useState("");
+  const [debounced, setDebounced] = useState("");
+  useEffect(() => {
+    const t = setTimeout(() => setDebounced(search.trim()), 400);
+    return () => clearTimeout(t);
+  }, [search]);
+  const { data: res, refetch } = useQuery({
+    queryKey: ["admin-meds", lang, debounced],
+    queryFn: () => listFn({ data: { language: lang, search: debounced } }),
+  });
+  const data = (res?.rows ?? []) as any[];
+  const totalCount = res?.total ?? 0;
   const [editing, setEditing] = useState<any | null>(null);
   const [open, setOpen] = useState(false);
   const [importing, setImporting] = useState(false);
   const [importProgress, setImportProgress] = useState<string>("");
-  const [search, setSearch] = useState("");
 
   const handleXlsxImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -335,7 +344,7 @@ function MedicinesByLang({ lang }: { lang: "latin" | "cyrillic" }) {
         </Label>
         {importing && <span className="text-xs text-muted-foreground">{importProgress}</span>}
         <Button variant="destructive" size="sm" disabled={!data.length || importing} onClick={async () => {
-          if (!confirm(`DIQQAT: Barcha ${data.length} ta ${label} dorilar o'chiriladi. Davom etilsinmi?`)) return;
+          if (!confirm(`DIQQAT: Barcha ${totalCount} ta ${label} dorilar o'chiriladi. Davom etilsinmi?`)) return;
           if (!confirm("Rostdan ham o'chirmoqchimisiz? Bu amalni qaytarib bo'lmaydi.")) return;
           try {
             const res = await deleteAllFn({ data: { language: lang } });
@@ -348,10 +357,9 @@ function MedicinesByLang({ lang }: { lang: "latin" | "cyrillic" }) {
         <span className="text-xs text-muted-foreground w-full">Import ustunlari: <b>name</b> (nomi), <b>price</b> (narx), <b>image_url</b> (rasm)</span>
       </div>
       <Input placeholder="Qidirish (nomi bo'yicha)..." value={search} onChange={(e) => setSearch(e.target.value)} className="max-w-sm" />
-      <div className="text-xs text-muted-foreground">Jami: {data.length} ta {label} dori{search && ` · Topildi: ${data.filter((m: any) => matchesSearch(search, m.name, m.name_cyrl)).length}`}</div>
+      <div className="text-xs text-muted-foreground">Jami: ~{totalCount.toLocaleString("ru-RU")} ta {label} dori · Ko'rsatilmoqda: {data.length} ta (qidiruv orqali toping)</div>
       <div className="grid md:grid-cols-2 gap-3">
-        {data.filter((m: any) => matchesSearch(search, m.name, m.name_cyrl)).map((m: any) => (
-
+        {data.map((m: any) => (
           <Card key={m.id} className="p-3 flex gap-3">
             {m.image_url && <img src={m.image_url} alt="" className="h-16 w-16 object-cover rounded" />}
             <div className="flex-1 min-w-0">

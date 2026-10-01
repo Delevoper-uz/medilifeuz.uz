@@ -91,21 +91,33 @@ const MedicineSchema = z.object({
 
 export const adminListMedicines = createServerFn({ method: "POST" })
   .middleware([requireAdminPanel])
-  .inputValidator((i) => (i ?? {}))
-  .handler(async ({ context }) => {
-    const out: any[] = [];
-    const size = 1000;
-    for (let from = 0; ; from += size) {
-      const { data: rows, error } = await supabaseAdmin
+  .inputValidator((i: unknown) =>
+    z
+      .object({ language: z.enum(["latin", "cyrillic"]).optional(), search: z.string().max(100).optional() })
+      .parse(i ?? {}),
+  )
+  .handler(async ({ data }) => {
+    // Baza juda katta (~1 mln) — faqat 300 ta qator va umumiy son qaytaramiz
+    let q = supabaseAdmin
+      .from("medicines")
+      .select("id, name, name_cyrl, description, image_url, price, unit, stock, language, created_at")
+      .order("created_at", { ascending: false })
+      .order("id", { ascending: false })
+      .limit(300);
+    if (data.language) q = q.eq("language", data.language);
+    const term = (data.search ?? "").replace(/[%,()*"'.:]/g, "").trim();
+    if (term.length >= 2) q = q.or(`name.ilike.%${term}%,name_cyrl.ilike.%${term}%`);
+    const { data: rows, error } = await q;
+    if (error) throw new Error(error.message);
+    let total = rows?.length ?? 0;
+    if (data.language) {
+      const { count } = await supabaseAdmin
         .from("medicines")
-        .select("*")
-        .order("created_at", { ascending: false })
-        .range(from, from + size - 1);
-      if (error) throw new Error(error.message);
-      out.push(...(rows ?? []));
-      if (!rows || rows.length < size) break;
+        .select("id", { count: "estimated", head: true })
+        .eq("language", data.language);
+      total = count ?? total;
     }
-    return out;
+    return { rows: rows ?? [], total };
   });
 
 
