@@ -105,7 +105,7 @@ export const adminListMedicines = createServerFn({ method: "POST" })
         .order("id", { ascending: false })
         .limit(size);
       if (cursor) {
-        q = q.or(`created_at.lt.${cursor.created_at},and(created_at.eq.${cursor.created_at},id.lt.${cursor.id})`);
+        q = q.or(`created_at.lt."${cursor.created_at}",and(created_at.eq."${cursor.created_at}",id.lt.${cursor.id})`);
       }
       const { data: rows, error } = await q;
       if (error) throw new Error(error.message);
