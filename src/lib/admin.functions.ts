@@ -91,31 +91,33 @@ const MedicineSchema = z.object({
 
 export const adminListMedicines = createServerFn({ method: "POST" })
   .middleware([requireAdminPanel])
-  .inputValidator((i) => (i ?? {}))
-  .handler(async ({ context }) => {
-    // Kursor bo'yicha sahifalash (offset emas) — katta jadvalda ham tez
-    const out: any[] = [];
-    const size = 1000;
-    let cursor: { created_at: string; id: string } | null = null;
-    for (;;) {
-      let q = supabaseAdmin
+  .inputValidator((i: unknown) =>
+    z
+      .object({ language: z.enum(["latin", "cyrillic"]).optional(), search: z.string().max(100).optional() })
+      .parse(i ?? {}),
+  )
+  .handler(async ({ data }) => {
+    // Baza juda katta (~1 mln) — faqat 300 ta qator va umumiy son qaytaramiz
+    let q = supabaseAdmin
+      .from("medicines")
+      .select("id, name, name_cyrl, description, image_url, price, unit, stock, language, created_at")
+      .order("created_at", { ascending: false })
+      .order("id", { ascending: false })
+      .limit(300);
+    if (data.language) q = q.eq("language", data.language);
+    const term = (data.search ?? "").replace(/[%,()*"'.:]/g, "").trim();
+    if (term.length >= 2) q = q.or(`name.ilike.%${term}%,name_cyrl.ilike.%${term}%`);
+    const { data: rows, error } = await q;
+    if (error) throw new Error(error.message);
+    let total = rows?.length ?? 0;
+    if (data.language) {
+      const { count } = await supabaseAdmin
         .from("medicines")
-        .select("id, name, name_cyrl, description, image_url, price, unit, stock, language, created_at")
-        .order("created_at", { ascending: false })
-        .order("id", { ascending: false })
-        .limit(size);
-      if (cursor) {
-        q = q.or(`created_at.lt."${cursor.created_at}",and(created_at.eq."${cursor.created_at}",id.lt.${cursor.id})`);
-      }
-      const { data: rows, error } = await q;
-      if (error) throw new Error(error.message);
-      const list = rows ?? [];
-      out.push(...list);
-      if (list.length < size) break;
-      const last = list[list.length - 1] as { created_at: string; id: string };
-      cursor = { created_at: last.created_at, id: last.id };
+        .select("id", { count: "estimated", head: true })
+        .eq("language", data.language);
+      total = count ?? total;
     }
-    return out;
+    return { rows: rows ?? [], total };
   });
 
 
