@@ -93,17 +93,27 @@ export const adminListMedicines = createServerFn({ method: "POST" })
   .middleware([requireAdminPanel])
   .inputValidator((i) => (i ?? {}))
   .handler(async ({ context }) => {
+    // Kursor bo'yicha sahifalash (offset emas) — katta jadvalda ham tez
     const out: any[] = [];
     const size = 1000;
-    for (let from = 0; ; from += size) {
-      const { data: rows, error } = await supabaseAdmin
+    let cursor: { created_at: string; id: string } | null = null;
+    for (;;) {
+      let q = supabaseAdmin
         .from("medicines")
-        .select("*")
+        .select("id, name, name_cyrl, description, image_url, price, unit, stock, language, created_at")
         .order("created_at", { ascending: false })
-        .range(from, from + size - 1);
+        .order("id", { ascending: false })
+        .limit(size);
+      if (cursor) {
+        q = q.or(`created_at.lt.${cursor.created_at},and(created_at.eq.${cursor.created_at},id.lt.${cursor.id})`);
+      }
+      const { data: rows, error } = await q;
       if (error) throw new Error(error.message);
-      out.push(...(rows ?? []));
-      if (!rows || rows.length < size) break;
+      const list = rows ?? [];
+      out.push(...list);
+      if (list.length < size) break;
+      const last = list[list.length - 1] as { created_at: string; id: string };
+      cursor = { created_at: last.created_at, id: last.id };
     }
     return out;
   });
