@@ -252,9 +252,10 @@ function MedicinesByLang({ lang }: { lang: "latin" | "cyrillic" }) {
     const t = setTimeout(() => setDebounced(search.trim()), 400);
     return () => clearTimeout(t);
   }, [search]);
+  const [onlyChanged, setOnlyChanged] = useState(false);
   const { data: res, refetch } = useQuery({
-    queryKey: ["admin-meds", lang, debounced],
-    queryFn: () => listFn({ data: { language: lang, search: debounced } }),
+    queryKey: ["admin-meds", lang, debounced, onlyChanged],
+    queryFn: () => listFn({ data: { language: lang, search: debounced, changed: onlyChanged } }),
   });
   const data = (res?.rows ?? []) as any[];
   const totalCount = res?.total ?? 0;
@@ -358,6 +359,7 @@ function MedicinesByLang({ lang }: { lang: "latin" | "cyrillic" }) {
         <span className="text-xs text-muted-foreground w-full">Import ustunlari: <b>name</b> (nomi), <b>price</b> (narx), <b>image_url</b> (rasm)</span>
       </div>
       <Input placeholder="Qidirish (nomi bo'yicha)..." value={search} onChange={(e) => setSearch(e.target.value)} className="max-w-sm" />
+      <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={onlyChanged} onChange={(e) => setOnlyChanged(e.target.checked)} /> Faqat narxi o'zgargan dorilar</label>
       <div className="text-xs text-muted-foreground">Jami: ~{totalCount.toLocaleString("ru-RU")} ta {label} dori · Ko'rsatilmoqda: {data.length} ta (qidiruv orqali toping)</div>
       <div className="grid md:grid-cols-2 gap-3">
         {data.map((m: any) => (
