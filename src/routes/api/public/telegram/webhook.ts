@@ -65,17 +65,26 @@ export const Route = createFileRoute("/api/public/telegram/webhook")({
               .from("orders")
               .update({ status: "processing", branch })
               .eq("id", orderId);
-            await fetch(`https://api.telegram.org/bot${token}/editMessageText`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                chat_id: cb.message?.chat?.id,
-                message_id: cb.message?.message_id,
-                text: `${cb.message?.text ?? ""}\n\n✅ Buyurtma [${branch}] tomonidan qabul qilindi. To'lov turi: Naqd`,
-                reply_markup: { inline_keyboard: [] },
-              }),
-            }).catch(() => undefined);
-            await answer(`✅ ${branch} qabul qildi`);
+            const acceptedLine = `✅ ${branch} buyurtmani qabul qildi`;
+            const isCaption = typeof cb.message?.caption === "string" || !cb.message?.text;
+            const tgPost = (method: string, body: unknown) =>
+              fetch(`https://api.telegram.org/bot${token}/${method}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(body),
+              }).catch(() => undefined);
+            const base = { chat_id: cb.message?.chat?.id, message_id: cb.message?.message_id, reply_markup: { inline_keyboard: [] } };
+            if (isCaption) {
+              await tgPost("editMessageCaption", { ...base, caption: `${cb.message?.caption ?? ""}\n\n${acceptedLine}`.slice(0, 1024) });
+            } else {
+              await tgPost("editMessageText", { ...base, text: `${cb.message?.text ?? ""}\n\n${acceptedLine}`.slice(0, 4096) });
+            }
+            await tgPost("sendMessage", {
+              chat_id: cb.message?.chat?.id,
+              reply_to_message_id: cb.message?.message_id,
+              text: acceptedLine,
+            });
+            await answer(acceptedLine);
             return Response.json({ ok: true });
           }
 
