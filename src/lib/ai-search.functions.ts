@@ -183,58 +183,32 @@ const SYSTEM_PROMPT =
 
 /** AI gateway'ga tez (streaming, past reasoning) so'rov yuborib nomlarni oladi. */
 async function readNamesWithAi(imageDataUrl: string, apiKey: string): Promise<string[]> {
-  const res = await fetch("https://ai.gateway.lovable.dev/v1/responses", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-      "X-Lovable-AIG-SDK": "fetch",
-    },
-    body: JSON.stringify({
-      model: "openai/gpt-6-astra",
-      stream: true,
-      store: false,
-      reasoning: { effort: "low" },
-      input: [
-        { role: "system", content: [{ type: "input_text", text: SYSTEM_PROMPT }] },
-        {
-          role: "user",
-          content: [
-            { type: "input_text", text: "Rasmdagi dorilar nomlarini JSON qilib ber." },
-            { type: "input_image", image_url: imageDataUrl },
-          ],
-        },
-      ],
-    }),
-  });
-  if (!res.ok || !res.body) {
-    console.error("ai gateway error", res.status, await res.text().catch(() => ""));
-    return [];
-  }
-  const reader = res.body.getReader();
-  const dec = new TextDecoder();
-  let buf = "";
   let text = "";
-  for (;;) {
-    const { value, done } = await reader.read();
-    if (done) break;
-    buf += dec.decode(value, { stream: true });
-    let idx: number;
-    while ((idx = buf.indexOf("\n\n")) >= 0) {
-      const frame = buf.slice(0, idx);
-      buf = buf.slice(idx + 2);
-      for (const line of frame.split("\n")) {
-        if (!line.startsWith("data:")) continue;
-        const payload = line.slice(5).trim();
-        if (!payload || payload === "[DONE]") continue;
-        try {
-          const ev = JSON.parse(payload) as { type?: string; delta?: string };
-          if (ev.type === "response.output_text.delta" && ev.delta) text += ev.delta;
-        } catch {
-          /* qisman kadr */
-        }
-      }
+  for (const model of ["google/gemini-2.5-flash", "google/gemini-2.5-pro"]) {
+    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model,
+        messages: [
+          { role: "system", content: SYSTEM_PROMPT },
+          {
+            role: "user",
+            content: [
+              { type: "text", text: "Rasmdagi dorilar nomlarini JSON qilib ber." },
+              { type: "image_url", image_url: { url: imageDataUrl } },
+            ],
+          },
+        ],
+      }),
+    });
+    if (!res.ok) {
+      console.error("ai gateway error", model, res.status, await res.text().catch(() => ""));
+      continue;
     }
+    const json = (await res.json()) as { choices?: { message?: { content?: string } }[] };
+    text = json.choices?.[0]?.message?.content ?? "";
+    if (/"names"\s*:\s*\[\s*"/.test(text)) break;
   }
   const match = /\{[\s\S]*\}/.exec(text);
   if (!match) return [];
