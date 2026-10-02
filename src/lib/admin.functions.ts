@@ -178,7 +178,7 @@ export const adminBulkImportMedicines = createServerFn({ method: "POST" })
         const ex = found.get(r.name);
         if (!ex) { toInsert.push(r); continue; }
         if (Number(ex.price) !== r.price || r.image_url) {
-          const patch: Record<string, unknown> = { price: r.price };
+          const patch: { price: number; image_url?: string; name_cyrl?: string } = { price: r.price };
           if (r.image_url) patch.image_url = r.image_url;
           if (r.name_cyrl) patch.name_cyrl = r.name_cyrl;
           const { error } = await supabaseAdmin.from("medicines").update(patch).eq("id", ex.id);
