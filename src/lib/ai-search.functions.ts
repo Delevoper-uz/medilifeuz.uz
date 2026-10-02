@@ -184,30 +184,41 @@ const SYSTEM_PROMPT =
 /** AI gateway'ga tez (streaming, past reasoning) so'rov yuborib nomlarni oladi. */
 async function readNamesWithAi(imageDataUrl: string, apiKey: string): Promise<string[]> {
   let text = "";
-  for (const model of ["google/gemini-2.5-flash", "google/gemini-2.5-pro"]) {
-    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const res = await fetch("https://ai.gateway.lovable.dev/v1/responses", {
       method: "POST",
       headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({
-        model,
-        messages: [
-          { role: "system", content: SYSTEM_PROMPT },
+        model: "openai/gpt-6-astra",
+        store: false,
+        reasoning: { effort: attempt === 0 ? "low" : "medium" },
+        input: [
+          { role: "system", content: [{ type: "input_text", text: SYSTEM_PROMPT }] },
           {
             role: "user",
             content: [
-              { type: "text", text: "Rasmdagi dorilar nomlarini JSON qilib ber." },
-              { type: "image_url", image_url: { url: imageDataUrl } },
+              { type: "input_text", text: "Rasmdagi dorilar nomlarini JSON qilib ber." },
+              { type: "input_image", image_url: imageDataUrl, detail: "high" },
             ],
           },
         ],
       }),
     });
     if (!res.ok) {
-      console.error("ai gateway error", model, res.status, await res.text().catch(() => ""));
+      console.error("ai gateway error", res.status, await res.text().catch(() => ""));
       continue;
     }
-    const json = (await res.json()) as { choices?: { message?: { content?: string } }[] };
-    text = json.choices?.[0]?.message?.content ?? "";
+    const json = (await res.json()) as {
+      output_text?: string;
+      output?: { type?: string; content?: { type?: string; text?: string }[] }[];
+    };
+    text =
+      json.output_text ??
+      (json.output ?? [])
+        .flatMap((o) => o.content ?? [])
+        .filter((c) => c.type === "output_text")
+        .map((c) => c.text ?? "")
+        .join("");
     if (/"names"\s*:\s*\[\s*"/.test(text)) break;
   }
   const match = /\{[\s\S]*\}/.exec(text);
