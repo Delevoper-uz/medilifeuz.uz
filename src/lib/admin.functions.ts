@@ -158,13 +158,40 @@ export const adminBulkImportMedicines = createServerFn({ method: "POST" })
       language: data.language,
     }));
     let inserted = 0;
-    for (let i = 0; i < rows.length; i += 500) {
-      const chunk = rows.slice(i, i + 500);
-      const { error } = await supabaseAdmin.from("medicines").insert(chunk);
-      if (error) throw new Error(error.message);
-      inserted += chunk.length;
+    let updated = 0;
+    // Bir xil nomdagi dorilar faylda takrorlansa, oxirgisi olinadi
+    const byName = new Map<string, (typeof rows)[number]>();
+    for (const r of rows) byName.set(r.name.trim(), { ...r, name: r.name.trim() });
+    const unique = [...byName.values()];
+    for (let i = 0; i < unique.length; i += 200) {
+      const chunk = unique.slice(i, i + 200);
+      const { data: existing, error: selErr } = await supabaseAdmin
+        .from("medicines")
+        .select("id, name, price")
+        .eq("language", data.language)
+        .in("name", chunk.map((r) => r.name));
+      if (selErr) throw new Error(selErr.message);
+      const found = new Map((existing ?? []).map((e) => [e.name, e]));
+      const toInsert = [];
+      for (const r of chunk) {
+        const ex = found.get(r.name);
+        if (!ex) { toInsert.push(r); continue; }
+        if (Number(ex.price) !== r.price || r.image_url) {
+          const patch: Record<string, unknown> = { price: r.price };
+          if (r.image_url) patch.image_url = r.image_url;
+          if (r.name_cyrl) patch.name_cyrl = r.name_cyrl;
+          const { error } = await supabaseAdmin.from("medicines").update(patch).eq("id", ex.id);
+          if (error) throw new Error(error.message);
+          updated += 1;
+        }
+      }
+      if (toInsert.length) {
+        const { error } = await supabaseAdmin.from("medicines").insert(toInsert);
+        if (error) throw new Error(error.message);
+        inserted += toInsert.length;
+      }
     }
-    return { inserted };
+    return { inserted, updated };
   });
 
 export const adminDeleteMedicine = createServerFn({ method: "POST" })
