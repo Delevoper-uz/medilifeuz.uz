@@ -294,14 +294,15 @@ function MedicinesByLang({ lang }: { lang: "latin" | "cyrillic" }) {
       }
 
       let total = 0;
+      let upd = 0;
       const chunkSize = 500;
       for (let i = 0; i < parsed.length; i += chunkSize) {
         const chunk = parsed.slice(i, i + chunkSize);
         setImportProgress(`Yuklanmoqda: ${i}/${parsed.length}...`);
         const res = await bulkFn({ data: { language: lang, items: chunk } });
-        total += res.inserted;
+        total += res.inserted; upd += res.updated ?? 0;
       }
-      toast.success(`${total} ta dori muvaffaqiyatli yuklandi`);
+      toast.success(`${total} ta yangi dori qo'shildi, ${upd} ta dori narxi yangilandi`);
       refetch();
     } catch (err: any) {
       toast.error(err.message || "Faylni yuklashda xatolik");
@@ -365,6 +366,11 @@ function MedicinesByLang({ lang }: { lang: "latin" | "cyrillic" }) {
             <div className="flex-1 min-w-0">
               <h3 className="font-medium truncate">{lang === "cyrillic" ? (m.name_cyrl || m.name) : m.name}</h3>
               <p className="text-xs text-muted-foreground">{Number(m.price).toLocaleString()} so'm</p>
+              {m.price_changed_at && (
+                <p className="text-xs font-medium text-primary">
+                  Narx o'zgardi: {m.old_price != null ? `${Number(m.old_price).toLocaleString()} → ` : ""}{Number(m.price).toLocaleString()} · {new Date(m.price_changed_at).toLocaleDateString("ru-RU")}
+                </p>
+              )}
             </div>
             <div className="flex flex-col gap-1">
               <Button size="icon" variant="ghost" onClick={() => { setEditing(m); setOpen(true); }}><Pencil className="h-4 w-4" /></Button>

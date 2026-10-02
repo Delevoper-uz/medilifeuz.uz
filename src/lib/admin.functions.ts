@@ -93,18 +93,19 @@ export const adminListMedicines = createServerFn({ method: "POST" })
   .middleware([requireAdminPanel])
   .inputValidator((i: unknown) =>
     z
-      .object({ language: z.enum(["latin", "cyrillic"]).optional(), search: z.string().max(100).optional() })
+      .object({ language: z.enum(["latin", "cyrillic"]).optional(), search: z.string().max(100).optional(), changed: z.boolean().optional() })
       .parse(i ?? {}),
   )
   .handler(async ({ data }) => {
     // Baza juda katta (~1 mln) — faqat 300 ta qator va umumiy son qaytaramiz
     let q = supabaseAdmin
       .from("medicines")
-      .select("id, name, name_cyrl, description, image_url, price, unit, stock, language, created_at")
-      .order("created_at", { ascending: false })
+      .select("id, name, name_cyrl, description, image_url, price, unit, stock, language, created_at, old_price, price_changed_at")
+      .order(data.changed ? "price_changed_at" : "created_at", { ascending: false })
       .order("id", { ascending: false })
       .limit(300);
     if (data.language) q = q.eq("language", data.language);
+    if (data.changed) q = q.not("price_changed_at", "is", null);
     const term = (data.search ?? "").replace(/[%,()*"'.:]/g, "").trim();
     if (term.length >= 2) q = q.or(`name.ilike.%${term}%,name_cyrl.ilike.%${term}%`);
     const { data: rows, error } = await q;
