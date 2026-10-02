@@ -184,7 +184,9 @@ export type Database = {
           language: string
           name: string
           name_cyrl: string | null
+          old_price: number | null
           price: number
+          price_changed_at: string | null
           stock: number
           unit: string
           updated_at: string
@@ -197,7 +199,9 @@ export type Database = {
           language?: string
           name: string
           name_cyrl?: string | null
+          old_price?: number | null
           price?: number
+          price_changed_at?: string | null
           stock?: number
           unit?: string
           updated_at?: string
@@ -210,7 +214,9 @@ export type Database = {
           language?: string
           name?: string
           name_cyrl?: string | null
+          old_price?: number | null
           price?: number
+          price_changed_at?: string | null
           stock?: number
           unit?: string
           updated_at?: string

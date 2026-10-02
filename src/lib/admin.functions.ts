@@ -93,18 +93,19 @@ export const adminListMedicines = createServerFn({ method: "POST" })
   .middleware([requireAdminPanel])
   .inputValidator((i: unknown) =>
     z
-      .object({ language: z.enum(["latin", "cyrillic"]).optional(), search: z.string().max(100).optional() })
+      .object({ language: z.enum(["latin", "cyrillic"]).optional(), search: z.string().max(100).optional(), changed: z.boolean().optional() })
       .parse(i ?? {}),
   )
   .handler(async ({ data }) => {
     // Baza juda katta (~1 mln) — faqat 300 ta qator va umumiy son qaytaramiz
     let q = supabaseAdmin
       .from("medicines")
-      .select("id, name, name_cyrl, description, image_url, price, unit, stock, language, created_at")
-      .order("created_at", { ascending: false })
+      .select("id, name, name_cyrl, description, image_url, price, unit, stock, language, created_at, old_price, price_changed_at")
+      .order(data.changed ? "price_changed_at" : "created_at", { ascending: false })
       .order("id", { ascending: false })
       .limit(300);
     if (data.language) q = q.eq("language", data.language);
+    if (data.changed) q = q.not("price_changed_at", "is", null);
     const term = (data.search ?? "").replace(/[%,()*"'.:]/g, "").trim();
     if (term.length >= 2) q = q.or(`name.ilike.%${term}%,name_cyrl.ilike.%${term}%`);
     const { data: rows, error } = await q;
@@ -158,13 +159,40 @@ export const adminBulkImportMedicines = createServerFn({ method: "POST" })
       language: data.language,
     }));
     let inserted = 0;
-    for (let i = 0; i < rows.length; i += 500) {
-      const chunk = rows.slice(i, i + 500);
-      const { error } = await supabaseAdmin.from("medicines").insert(chunk);
-      if (error) throw new Error(error.message);
-      inserted += chunk.length;
+    let updated = 0;
+    // Bir xil nomdagi dorilar faylda takrorlansa, oxirgisi olinadi
+    const byName = new Map<string, (typeof rows)[number]>();
+    for (const r of rows) byName.set(r.name.trim(), { ...r, name: r.name.trim() });
+    const unique = [...byName.values()];
+    for (let i = 0; i < unique.length; i += 200) {
+      const chunk = unique.slice(i, i + 200);
+      const { data: existing, error: selErr } = await supabaseAdmin
+        .from("medicines")
+        .select("id, name, price")
+        .eq("language", data.language)
+        .in("name", chunk.map((r) => r.name));
+      if (selErr) throw new Error(selErr.message);
+      const found = new Map((existing ?? []).map((e) => [e.name, e]));
+      const toInsert = [];
+      for (const r of chunk) {
+        const ex = found.get(r.name);
+        if (!ex) { toInsert.push(r); continue; }
+        if (Number(ex.price) !== r.price || r.image_url) {
+          const patch: { price: number; image_url?: string; name_cyrl?: string } = { price: r.price };
+          if (r.image_url) patch.image_url = r.image_url;
+          if (r.name_cyrl) patch.name_cyrl = r.name_cyrl;
+          const { error } = await supabaseAdmin.from("medicines").update(patch).eq("id", ex.id);
+          if (error) throw new Error(error.message);
+          updated += 1;
+        }
+      }
+      if (toInsert.length) {
+        const { error } = await supabaseAdmin.from("medicines").insert(toInsert);
+        if (error) throw new Error(error.message);
+        inserted += toInsert.length;
+      }
     }
-    return { inserted };
+    return { inserted, updated };
   });
 
 export const adminDeleteMedicine = createServerFn({ method: "POST" })
