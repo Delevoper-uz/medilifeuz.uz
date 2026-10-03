@@ -14,7 +14,7 @@ const resources = {
       branches: { title: "Бизнинг Филиаллар", view_map: "Харитада кўриш", view_google: "Google Maps да очиш", view_yandex: "Yandex Maps да очиш", empty: "Ҳозирча филиаллар йўқ" },
       admin: { title: "Админ Панел", tabs: { news: "Янгиликлар", medicines: "Дорилар", branches: "Филиаллар", orders: "Буюртмалар" } },
       orders: { title: "Буюртмаларим", status: { pending: "Кутилмоқда", confirmed: "Тасдиқланган", delivering: "Етказилмоқда", delivered: "Етказилди", cancelled: "Бекор қилинган" }, rate: "Баҳолаш", rating: "Рейтинг", comment: "Шарҳ" },
-      footer: { tagline: "Соғлиғингиз учун ишончли онлайн дорихона. Энг сара ва арзон дорилар — Наманган шаҳрида.", call_center: "Колл марказ", manager: "Масъул", manager_name: "Абдулқуддус Одилов", address: "Наманган шаҳри, Ўзбекистон", rights: "© 2000 MediLife. Барча ҳуқуқлар ҳимояланган." },
+      footer: { tagline: "Соғлиғингиз учун ишончли онлайн дорихона. Энг сара ва арзон дорилар — Наманган шаҳрида.", call_center: "Колл марказ", manager: "Масъул", manager_name: "Одилов Исмоил", address: "Наманган шаҳри, Ўзбекистон", rights: "© 2000 MediLife. Барча ҳуқуқлар ҳимояланган." },
     },
   },
   uz: {
@@ -29,7 +29,7 @@ const resources = {
       branches: { title: "Bizning Filiallar", view_map: "Xaritada ko'rish", view_google: "Google Maps da ochish", view_yandex: "Yandex Maps da ochish", empty: "Hozircha filiallar yo'q" },
       admin: { title: "Admin Panel", tabs: { news: "Yangiliklar", medicines: "Dorilar", branches: "Filiallar", orders: "Buyurtmalar" } },
       orders: { title: "Buyurtmalarim", status: { pending: "Kutilmoqda", confirmed: "Tasdiqlangan", delivering: "Yetkazilmoqda", delivered: "Yetkazildi", cancelled: "Bekor qilingan" }, rate: "Baholash", rating: "Reyting", comment: "Sharh" },
-      footer: { tagline: "Sog'lig'ingiz uchun ishonchli onlayn dorixona. Eng sara va arzon dorilar — Namangan shahrida.", call_center: "Call markaz", manager: "Mas'ul", manager_name: "Abdulquddus Odilov", address: "Namangan shahri, O'zbekiston", rights: "© 2000 MediLife. Barcha huquqlar himoyalangan." },
+      footer: { tagline: "Sog'lig'ingiz uchun ishonchli onlayn dorixona. Eng sara va arzon dorilar — Namangan shahrida.", call_center: "Call markaz", manager: "Mas'ul", manager_name: "Odilov Ismoil", address: "Namangan shahri, O'zbekiston", rights: "© 2000 MediLife. Barcha huquqlar himoyalangan." },
     },
   },
 };
