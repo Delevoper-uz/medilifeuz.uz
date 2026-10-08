@@ -9,45 +9,20 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as YangiliklarRouteImport } from './routes/yangiliklar'
-import { Route as SavatchaRouteImport } from './routes/savatcha'
-import { Route as LoginRouteImport } from './routes/login'
-import { Route as FiliallarRouteImport } from './routes/filiallar'
-import { Route as DorilarRouteImport } from './routes/dorilar'
-import { Route as DoktorKorigiRouteImport } from './routes/doktor-korigi'
-import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as ApiPublicTelegramWebhookRouteImport } from './routes/api/public/telegram/webhook'
+import { Route as AdminRouteImport } from './routes/admin'
+import { Route as DoktorKorigiRouteImport } from './routes/doktor-korigi'
+import { Route as DorilarRouteImport } from './routes/dorilar'
+import { Route as FiliallarRouteImport } from './routes/filiallar'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as SavatchaRouteImport } from './routes/savatcha'
+import { Route as YangiliklarRouteImport } from './routes/yangiliklar'
 import { Route as ApiPublicTelegramPriceBotRouteImport } from './routes/api/public/telegram/price-bot'
+import { Route as ApiPublicTelegramWebhookRouteImport } from './routes/api/public/telegram/webhook'
 
-const YangiliklarRoute = YangiliklarRouteImport.update({
-  id: '/yangiliklar',
-  path: '/yangiliklar',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SavatchaRoute = SavatchaRouteImport.update({
-  id: '/savatcha',
-  path: '/savatcha',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const FiliallarRoute = FiliallarRouteImport.update({
-  id: '/filiallar',
-  path: '/filiallar',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DorilarRoute = DorilarRouteImport.update({
-  id: '/dorilar',
-  path: '/dorilar',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DoktorKorigiRoute = DoktorKorigiRouteImport.update({
-  id: '/doktor-korigi',
-  path: '/doktor-korigi',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRoute = AdminRouteImport.update({
@@ -55,21 +30,46 @@ const AdminRoute = AdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const DoktorKorigiRoute = DoktorKorigiRouteImport.update({
+  id: '/doktor-korigi',
+  path: '/doktor-korigi',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublicTelegramWebhookRoute =
-  ApiPublicTelegramWebhookRouteImport.update({
-    id: '/api/public/telegram/webhook',
-    path: '/api/public/telegram/webhook',
-    getParentRoute: () => rootRouteImport,
-  } as any)
+const DorilarRoute = DorilarRouteImport.update({
+  id: '/dorilar',
+  path: '/dorilar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FiliallarRoute = FiliallarRouteImport.update({
+  id: '/filiallar',
+  path: '/filiallar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SavatchaRoute = SavatchaRouteImport.update({
+  id: '/savatcha',
+  path: '/savatcha',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const YangiliklarRoute = YangiliklarRouteImport.update({
+  id: '/yangiliklar',
+  path: '/yangiliklar',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicTelegramPriceBotRoute =
   ApiPublicTelegramPriceBotRouteImport.update({
     id: '/api/public/telegram/price-bot',
     path: '/api/public/telegram/price-bot',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicTelegramWebhookRoute =
+  ApiPublicTelegramWebhookRouteImport.update({
+    id: '/api/public/telegram/webhook',
+    path: '/api/public/telegram/webhook',
     getParentRoute: () => rootRouteImport,
   } as any)
 
@@ -164,46 +164,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/yangiliklar': {
-      id: '/yangiliklar'
-      path: '/yangiliklar'
-      fullPath: '/yangiliklar'
-      preLoaderRoute: typeof YangiliklarRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/savatcha': {
-      id: '/savatcha'
-      path: '/savatcha'
-      fullPath: '/savatcha'
-      preLoaderRoute: typeof SavatchaRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/filiallar': {
-      id: '/filiallar'
-      path: '/filiallar'
-      fullPath: '/filiallar'
-      preLoaderRoute: typeof FiliallarRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/dorilar': {
-      id: '/dorilar'
-      path: '/dorilar'
-      fullPath: '/dorilar'
-      preLoaderRoute: typeof DorilarRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/doktor-korigi': {
-      id: '/doktor-korigi'
-      path: '/doktor-korigi'
-      fullPath: '/doktor-korigi'
-      preLoaderRoute: typeof DoktorKorigiRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin': {
@@ -213,18 +178,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/doktor-korigi': {
+      id: '/doktor-korigi'
+      path: '/doktor-korigi'
+      fullPath: '/doktor-korigi'
+      preLoaderRoute: typeof DoktorKorigiRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/telegram/webhook': {
-      id: '/api/public/telegram/webhook'
-      path: '/api/public/telegram/webhook'
-      fullPath: '/api/public/telegram/webhook'
-      preLoaderRoute: typeof ApiPublicTelegramWebhookRouteImport
+    '/dorilar': {
+      id: '/dorilar'
+      path: '/dorilar'
+      fullPath: '/dorilar'
+      preLoaderRoute: typeof DorilarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/filiallar': {
+      id: '/filiallar'
+      path: '/filiallar'
+      fullPath: '/filiallar'
+      preLoaderRoute: typeof FiliallarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/savatcha': {
+      id: '/savatcha'
+      path: '/savatcha'
+      fullPath: '/savatcha'
+      preLoaderRoute: typeof SavatchaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/yangiliklar': {
+      id: '/yangiliklar'
+      path: '/yangiliklar'
+      fullPath: '/yangiliklar'
+      preLoaderRoute: typeof YangiliklarRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/telegram/price-bot': {
@@ -232,6 +225,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/telegram/price-bot'
       fullPath: '/api/public/telegram/price-bot'
       preLoaderRoute: typeof ApiPublicTelegramPriceBotRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/telegram/webhook': {
+      id: '/api/public/telegram/webhook'
+      path: '/api/public/telegram/webhook'
+      fullPath: '/api/public/telegram/webhook'
+      preLoaderRoute: typeof ApiPublicTelegramWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
