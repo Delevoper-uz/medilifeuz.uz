@@ -84,19 +84,30 @@ async function lookupOne(
     supabase.from("medicines").select(SELECT).or(`name.ilike.%${term}%,name_cyrl.ilike.%${term}%`).limit(limit);
 
   if (first) {
-    const { data } = await q(first, 8);
+    const { data } = await q(first, 80);
     const rows = (data ?? []) as AiMedicine[];
     if (rows.length) {
-      // Ikkinchi so'z ham mos kelganlarni oldinga chiqaramiz
-      const second = tokens[1]?.toLowerCase();
-      if (second) {
-        rows.sort((a, b) => {
-          const sa = `${a.name} ${a.name_cyrl ?? ""}`.toLowerCase().includes(second) ? 0 : 1;
-          const sb = `${b.name} ${b.name_cyrl ?? ""}`.toLowerCase().includes(second) ? 0 : 1;
-          return sa - sb;
-        });
-      }
-      return { query: name, exact: true, candidates: rows.slice(0, 6) };
+      // Barcha so'zlar (qisqa "A" kabi harflar ham) bo'yicha ball beramiz
+      const allTokens = name.toLowerCase().split(/[\s,+/-]+/).filter(Boolean);
+      const full = name.toLowerCase().trim();
+      const score = (m: AiMedicine) => {
+        const hay = `${m.name} ${m.name_cyrl ?? ""}`.toLowerCase();
+        const words = hay.split(/[\s,+/-]+/);
+        let s = hay.includes(full) ? 100 : 0;
+        for (const t of allTokens) {
+          if (t.length < 3 ? words.includes(t) : hay.includes(t)) s += 10;
+        }
+        return s;
+      };
+      const seen = new Set<string>();
+      const uniq = rows.filter((r) => {
+        const k = `${r.name.toLowerCase()}|${r.price}`;
+        if (seen.has(k)) return false;
+        seen.add(k);
+        return true;
+      });
+      uniq.sort((a, b) => score(b) - score(a) || a.name.localeCompare(b.name));
+      return { query: name, exact: true, candidates: uniq.slice(0, 10) };
     }
   }
 
