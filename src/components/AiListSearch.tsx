@@ -13,9 +13,21 @@ import {
 } from "@/lib/ai-search.functions";
 
 /** "Ha / Yo'q" so'rab, raqam bo'yicha tanlash bloki (har bir retsept qatori uchun). */
-function GroupPicker({ index, group }: { index: number; group: AiGroup }) {
+function GroupPicker({ index, group: rawGroup }: { index: number; group: AiGroup }) {
   const [answer, setAnswer] = useState<"idle" | "yes" | "no">("idle");
   const [picked, setPicked] = useState<number[]>([]);
+
+  // Bir xil nom + narxdagi dorilarni faqat bir marta ko'rsatamiz
+  const seen = new Set<string>();
+  const group = {
+    ...rawGroup,
+    candidates: rawGroup.candidates.filter((c) => {
+      const key = `${String(c.name).toLowerCase().replace(/\s+/g, " ").trim()}|${Number(c.price)}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    }),
+  };
 
   if (!group.candidates.length) {
     return (
