@@ -1,3 +1,4 @@
+import { AppLoading } from "@/components/AppLoading";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -11,7 +12,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 
 export const Route = createFileRoute("/dorilar")({
   component: MedicinesPage,
-  head: () => ({ meta: [{ title: "Dorilar — MediLife" }] }),
+  head: () => ({ meta: [
+    { title: "Dorilar — MediLife" },
+    { name: "description", content: "MediLife dorilar katalogi: nomi va narxi bo‘yicha qidirish." },
+    { property: "og:title", content: "Dorilar — MediLife" },
+    { property: "og:description", content: "MediLife dorilar katalogi: nomi va narxi bo‘yicha qidirish." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
 });
 
 const PAGE_SIZE = 200;
@@ -121,7 +129,7 @@ function MedicinesPage() {
         </div>
       </div>
       {isLoading ? (
-        <p className="text-muted-foreground">{t("common.loading")}</p>
+        <AppLoading />
       ) : isError ? (
         <div className="text-muted-foreground">
           <p>Ma'lumot yuklanmadi. Internetni tekshirib, qayta urinib ko'ring.</p>
