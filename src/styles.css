@@ -197,7 +197,6 @@
 
 /* ===== Loading: black surface, layered shadows, "MED I LIFE" wordmark ===== */
 .medilife-loading {
-  position: relative;
   overflow: hidden;
   background-color: #050706;
   background-image:
@@ -293,6 +292,7 @@
 
 /* Inline (in-page) variant: light surface so it blends into the bright page */
 .medilife-loading-inline {
+  position: relative;
   background-color: color-mix(in oklab, var(--muted) 65%, white);
   background-image: radial-gradient(62% 60% at 50% 0%, color-mix(in oklab, var(--primary) 12%, transparent) 0%, transparent 72%);
   border-radius: var(--radius-lg);
