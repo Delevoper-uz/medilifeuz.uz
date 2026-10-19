@@ -258,6 +258,7 @@
   background-clip: text;
   color: transparent;
 }
+.medilife-loading-label { color: color-mix(in oklab, white 55%, transparent); }
 .medilife-loading-bar {
   position: relative;
   z-index: 1;
