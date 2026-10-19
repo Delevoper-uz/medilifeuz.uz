@@ -1,14 +1,17 @@
+import { useTranslation } from "react-i18next";
 import { useEffect, useState } from "react";
 import { useRouterState } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 
 /** Branded loading: black surface, layered shadows, animated "MED I LIFE" wordmark. */
 export function AppLoading({ fullscreen = false, leaving = false }: { fullscreen?: boolean; leaving?: boolean }) {
+  const { t } = useTranslation();
+  const label = t("common.loading");
   return (
     <div
       role="status"
       aria-live="polite"
-      aria-label="Yuklanmoqda"
+      aria-label={label}
       className={cn(
         "medilife-loading flex flex-col items-center justify-center gap-7",
         fullscreen ? "fixed inset-0 z-[100] p-6" : "medilife-loading-inline min-h-64 w-full py-12",
@@ -21,7 +24,7 @@ export function AppLoading({ fullscreen = false, leaving = false }: { fullscreen
         <span className="medilife-loading-word-life">LIFE</span>
       </div>
       <span aria-hidden="true" className="medilife-loading-bar" />
-      <p className="medilife-loading-label relative z-[1] text-sm font-medium tracking-wide">Yuklanmoqda…</p>
+      <p className="medilife-loading-label relative z-[1] text-sm font-medium tracking-wide">{label}</p>
     </div>
   );
 }
