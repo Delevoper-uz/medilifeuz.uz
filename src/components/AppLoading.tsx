@@ -5,6 +5,8 @@ import { cn } from "@/lib/utils";
 
 /** Branded loading: black surface, layered shadows, animated "MED I LIFE" wordmark. */
 export function AppLoading({ fullscreen = false, leaving = false }: { fullscreen?: boolean; leaving?: boolean }) {
+  const { t } = useTranslation();
+  const label = t("common.loading");
   return (
     <div
       role="status"
