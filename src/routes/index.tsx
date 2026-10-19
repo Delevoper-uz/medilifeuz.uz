@@ -8,6 +8,7 @@ import { MedicineCard, type Medicine } from "@/components/MedicineCard";
 import { Button } from "@/components/ui/button";
 import { AiListSearch } from "@/components/AiListSearch";
 import logo from "@/assets/medilife-logo.jpg";
+import { AppLoading } from "@/components/AppLoading";
 
 export const Route = createFileRoute("/")({
   component: Home,
@@ -15,6 +16,10 @@ export const Route = createFileRoute("/")({
     meta: [
       { title: "MediLife — Bosh sahifa" },
       { name: "description", content: "MediLife onlayn dorixona — yangiliklar, dorilar, filiallar." },
+      { property: "og:title", content: "MediLife — Bosh sahifa" },
+      { property: "og:description", content: "MediLife onlayn dorixona — yangiliklar, dorilar, filiallar." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
 });
@@ -122,7 +127,7 @@ function Home() {
         </div>
         <AiListSearch />
         {medsLoading ? (
-          <p className="text-muted-foreground">{t("common.loading")}</p>
+          <AppLoading />
         ) : medicines.length > 0 ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
             {medicines.map((m) => <MedicineCard key={m.id} m={m} />)}
@@ -135,7 +140,7 @@ function Home() {
       {/* News */}
       <section id="yangiliklar">
         <h2 className="text-3xl font-bold mb-6">{t("home.news_title")}</h2>
-        {newsLoading ? <p className="text-muted-foreground">{t("common.loading")}</p> : news.length > 0 ? <NewsCarousel items={news} /> : <p className="text-muted-foreground">{t("news.empty")}</p>}
+        {newsLoading ? <AppLoading /> : news.length > 0 ? <NewsCarousel items={news} /> : <p className="text-muted-foreground">{t("news.empty")}</p>}
       </section>
 
 

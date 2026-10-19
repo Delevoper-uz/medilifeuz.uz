@@ -194,3 +194,17 @@
   .float-slow, .glow-pulse, .nudge-x, .pulse-dot, .shimmer-text { animation: none; }
   .shimmer-text { color: var(--foreground); background: none; -webkit-background-clip: border-box; background-clip: border-box; }
 }
+
+.medilife-loading { opacity: 1; transition: opacity 300ms ease; }
+.medilife-loading-leaving { opacity: 0; pointer-events: none; }
+.medilife-loading-logo { animation: loading-breathe 1.8s ease-in-out infinite; }
+.medilife-loading-spinner { animation: loading-spin 850ms linear infinite; }
+@keyframes loading-spin { to { transform: rotate(360deg); } }
+@keyframes loading-breathe {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(0.96); opacity: 0.8; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .medilife-loading { transition: none; }
+  .medilife-loading-logo, .medilife-loading-spinner { animation: none; }
+}

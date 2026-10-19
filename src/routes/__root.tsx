@@ -17,6 +17,7 @@ import { AuthProvider } from "@/hooks/use-auth";
 import { CartProvider } from "@/hooks/use-cart";
 import { Toaster } from "@/components/ui/sonner";
 import { PresenceTracker } from "@/components/PresenceTracker";
+import { GlobalLoading } from "@/components/AppLoading";
 
 import "@/lib/i18n";
 
@@ -69,8 +70,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:type", content: "website" },
       { name: "twitter:title", content: "MediLife — Onlayn dorixona" },
       { name: "twitter:description", content: "MediLife — eng sara va arzon dorilar onlayn dorixonasi. Namangan." },
-      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/LMnpARAXBoO14gRsech4g4AYRxX2/social-images/social-1779123271961-photo_2026-03-17_19-13-16.webp" },
-      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/LMnpARAXBoO14gRsech4g4AYRxX2/social-images/social-1779123271961-photo_2026-03-17_19-13-16.webp" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [{ rel: "stylesheet", href: appCss }],
@@ -116,6 +115,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <CartProvider>
+          <GlobalLoading />
           <div className="min-h-screen flex flex-col">
             <Header />
             <main className="flex-1">
