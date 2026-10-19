@@ -16,7 +16,14 @@ import { YandexAddressPicker } from "@/components/YandexAddressPicker";
 
 export const Route = createFileRoute("/savatcha")({
   component: CartPage,
-  head: () => ({ meta: [{ title: "Savatcha — MediLife" }] }),
+  head: () => ({ meta: [
+    { title: "Savatcha — MediLife" },
+    { name: "description", content: "MediLife savatchangizdagi dorilar va buyurtmani rasmiylashtirish." },
+    { property: "og:title", content: "Savatcha — MediLife" },
+    { property: "og:description", content: "MediLife savatchangizdagi dorilar va buyurtmani rasmiylashtirish." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
 });
 
 function formatNamanganTime(d: Date): string {

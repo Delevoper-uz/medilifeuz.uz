@@ -1,3 +1,4 @@
+import { AppLoading } from "@/components/AppLoading";
 import { createFileRoute } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
@@ -7,7 +8,14 @@ import { Card } from "@/components/ui/card";
 
 export const Route = createFileRoute("/yangiliklar")({
   component: NewsPage,
-  head: () => ({ meta: [{ title: "Yangiliklar — MediLife" }] }),
+  head: () => ({ meta: [
+    { title: "Yangiliklar — MediLife" },
+    { name: "description", content: "MediLife dorixona yangiliklari va e’lonlari." },
+    { property: "og:title", content: "Yangiliklar — MediLife" },
+    { property: "og:description", content: "MediLife dorixona yangiliklari va e’lonlari." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
 });
 
 function NewsPage() {
@@ -24,7 +32,7 @@ function NewsPage() {
     <div className="container mx-auto px-4 py-10">
       <h1 className="text-4xl font-bold mb-8">{t("news.title")}</h1>
       {isLoading ? (
-        <p className="text-muted-foreground">{t("common.loading")}</p>
+        <AppLoading />
       ) : data.length === 0 ? (
         <p className="text-muted-foreground">{t("news.empty")}</p>
       ) : (

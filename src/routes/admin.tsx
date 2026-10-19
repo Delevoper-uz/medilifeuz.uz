@@ -44,7 +44,14 @@ import { BotListNotifier } from "@/components/BotListNotifier";
 
 export const Route = createFileRoute("/admin")({
   component: AdminPage,
-  head: () => ({ meta: [{ title: "Admin — MediLife" }] }),
+  head: () => ({ meta: [
+    { title: "Admin — MediLife" },
+    { name: "description", content: "MediLife boshqaruv sahifasi." },
+    { property: "og:title", content: "Admin — MediLife" },
+    { property: "og:description", content: "MediLife boshqaruv sahifasi." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
 });
 
 function AdminPage() {
