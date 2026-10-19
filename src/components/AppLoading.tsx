@@ -1,20 +1,27 @@
 import { useEffect, useState } from "react";
 import { useRouterState } from "@tanstack/react-router";
-import loadingLogo from "@/assets/medilife-loading.png.asset.json";
 import { cn } from "@/lib/utils";
 
+/** Branded loading: black surface, layered shadows, animated "MED I LIFE" wordmark. */
 export function AppLoading({ fullscreen = false, leaving = false }: { fullscreen?: boolean; leaving?: boolean }) {
   return (
-    <div role="status" aria-live="polite" aria-label="Yuklanmoqda" className={cn(
-      "medilife-loading flex flex-col items-center justify-center gap-6 bg-card text-card-foreground",
-      fullscreen ? "fixed inset-0 z-[100] p-6" : "min-h-64 w-full py-8",
-      leaving && "medilife-loading-leaving",
-    )}>
-      <img src={loadingLogo.url} alt="MediLife" width={140} height={161} className="medilife-loading-logo h-40 w-36 object-contain" fetchPriority="high" />
-      <div className="flex flex-col items-center gap-3">
-        <span aria-hidden="true" className="medilife-loading-spinner h-7 w-7 rounded-full border-[3px] border-primary/15 border-t-primary" />
-        <p className="text-sm font-medium text-muted-foreground">Yuklanmoqda…</p>
+    <div
+      role="status"
+      aria-live="polite"
+      aria-label="Yuklanmoqda"
+      className={cn(
+        "medilife-loading flex flex-col items-center justify-center gap-7",
+        fullscreen ? "fixed inset-0 z-[100] p-6" : "medilife-loading-inline min-h-64 w-full py-12",
+        leaving && "medilife-loading-leaving",
+      )}
+    >
+      <div className="medilife-loading-wordmark" aria-hidden="true">
+        <span className="medilife-loading-word-med">MED</span>
+        <span className="medilife-loading-word-i">I</span>
+        <span className="medilife-loading-word-life">LIFE</span>
       </div>
+      <span aria-hidden="true" className="medilife-loading-bar" />
+      <p className="medilife-loading-label relative z-[1] text-sm font-medium tracking-wide">Yuklanmoqda…</p>
     </div>
   );
 }
@@ -31,19 +38,14 @@ export function GlobalLoading() {
     const finish = () => {
       if (disposed) return;
       setLeaving(true);
-      exitTimer = setTimeout(() => { if (!disposed) setStartup(false); }, 300);
+      exitTimer = setTimeout(() => {
+        if (!disposed) setStartup(false);
+      }, 300);
     };
-    const image = new Image();
-    image.src = loadingLogo.url;
-    const safetyTimer = setTimeout(finish, 5000);
-    image.decode().catch(() => undefined).then(() => {
-      if (disposed) return;
-      clearTimeout(safetyTimer);
-      requestAnimationFrame(finish);
-    });
+    const holdTimer = setTimeout(finish, 900);
     return () => {
       disposed = true;
-      clearTimeout(safetyTimer);
+      clearTimeout(holdTimer);
       clearTimeout(exitTimer);
     };
   }, []);

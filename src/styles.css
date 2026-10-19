@@ -195,16 +195,155 @@
   .shimmer-text { color: var(--foreground); background: none; -webkit-background-clip: border-box; background-clip: border-box; }
 }
 
-.medilife-loading { opacity: 1; transition: opacity 300ms ease; }
-.medilife-loading-leaving { opacity: 0; pointer-events: none; }
-.medilife-loading-logo { animation: loading-breathe 1.8s ease-in-out infinite; }
-.medilife-loading-spinner { animation: loading-spin 850ms linear infinite; }
-@keyframes loading-spin { to { transform: rotate(360deg); } }
-@keyframes loading-breathe {
-  0%, 100% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(0.96); opacity: 0.8; }
+/* ===== Loading: black surface, layered shadows, "MED I LIFE" wordmark ===== */
+.medilife-loading {
+  overflow: hidden;
+  background-color: #050706;
+  background-image:
+    radial-gradient(58% 42% at 50% 36%, color-mix(in oklab, var(--primary) 18%, transparent) 0%, transparent 72%),
+    radial-gradient(110% 75% at 50% 120%, rgba(0, 0, 0, 0.9) 0%, transparent 62%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    inset 0 0 170px 46px rgba(0, 0, 0, 0.85);
+  opacity: 1;
+  transition: opacity 300ms ease;
 }
+.medilife-loading::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(34% 24% at 50% 50%, color-mix(in oklab, var(--primary-glow) 26%, transparent) 0%, transparent 70%);
+  animation: loading-pulse 2.6s ease-in-out infinite;
+}
+.medilife-loading-leaving { opacity: 0; pointer-events: none; }
+
+.medilife-loading-wordmark {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: baseline;
+  gap: 0.2em;
+  font-weight: 800;
+  font-size: clamp(1.9rem, 8vw, 4rem);
+  line-height: 1;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  filter: drop-shadow(0 20px 34px rgba(0, 0, 0, 0.92));
+}
+.medilife-loading-word-med,
+.medilife-loading-word-life {
+  background-image: linear-gradient(
+    100deg,
+    #eefaf5 0%,
+    #ffffff 34%,
+    color-mix(in oklab, var(--primary-glow) 55%, #ffffff) 50%,
+    #ffffff 66%,
+    #eefaf5 100%
+  );
+  background-size: 240% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: loading-shimmer 2.6s linear infinite;
+}
+.medilife-loading-word-i {
+  background-image: linear-gradient(
+    180deg,
+    color-mix(in oklab, var(--primary-glow) 88%, #ffffff) 0%,
+    var(--primary) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.medilife-loading-label { color: color-mix(in oklab, white 55%, transparent); }
+.medilife-loading-bar {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: min(230px, 62vw);
+  height: 3px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.05), 0 12px 26px rgba(0, 0, 0, 0.75);
+  overflow: hidden;
+}
+.medilife-loading-bar::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: 42%;
+  background: linear-gradient(90deg, transparent, var(--primary-glow), transparent);
+  animation: loading-slide 1.25s ease-in-out infinite;
+}
+@keyframes loading-slide {
+  0% { transform: translateX(-110%); }
+  100% { transform: translateX(320%); }
+}
+@keyframes loading-shimmer {
+  0% { background-position: 140% 0; }
+  100% { background-position: -140% 0; }
+}
+@keyframes loading-pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+/* Inline (in-page) variant: light surface so it blends into the bright page */
+.medilife-loading-inline {
+  position: relative;
+  background-color: color-mix(in oklab, var(--muted) 65%, white);
+  background-image: radial-gradient(62% 60% at 50% 0%, color-mix(in oklab, var(--primary) 12%, transparent) 0%, transparent 72%);
+  border-radius: var(--radius-lg);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in oklab, var(--border) 85%, transparent),
+    0 22px 44px -28px color-mix(in oklab, var(--foreground) 45%, transparent);
+}
+.medilife-loading-inline::after {
+  background: radial-gradient(34% 24% at 50% 50%, color-mix(in oklab, var(--primary) 18%, transparent) 0%, transparent 70%);
+}
+.medilife-loading-inline .medilife-loading-wordmark {
+  filter: drop-shadow(0 14px 24px color-mix(in oklab, var(--foreground) 20%, transparent));
+}
+.medilife-loading-inline .medilife-loading-word-med,
+.medilife-loading-inline .medilife-loading-word-life {
+  background-image: linear-gradient(
+    100deg,
+    color-mix(in oklab, var(--foreground) 85%, transparent) 0%,
+    var(--foreground) 36%,
+    color-mix(in oklab, var(--primary) 65%, var(--foreground)) 50%,
+    var(--foreground) 64%,
+    color-mix(in oklab, var(--foreground) 85%, transparent) 100%
+  );
+}
+.medilife-loading-inline .medilife-loading-bar {
+  background: color-mix(in oklab, var(--foreground) 10%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in oklab, var(--border) 70%, transparent);
+}
+.medilife-loading-inline .medilife-loading-label {
+  color: color-mix(in oklab, var(--muted-foreground) 92%, transparent);
+}
+
+/* ===== Fullscreen image viewer (branch photos) ===== */
+.medilife-zoom-overlay {
+  background-color: rgba(3, 5, 4, 0.94);
+  backdrop-filter: blur(6px);
+  animation: zoom-fade 180ms ease-out;
+}
+.medilife-zoom-image {
+  transition: transform 180ms ease-out;
+}
+@keyframes zoom-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .medilife-loading { transition: none; }
-  .medilife-loading-logo, .medilife-loading-spinner { animation: none; }
+  .medilife-loading::after,
+  .medilife-loading-bar::after,
+  .medilife-loading-word-med,
+  .medilife-loading-word-life { animation: none; }
+  .medilife-zoom-overlay { animation: none; }
 }
