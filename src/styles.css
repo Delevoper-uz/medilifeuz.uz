@@ -290,6 +290,40 @@
   50% { opacity: 1; }
 }
 
+/* Inline (in-page) variant: light surface so it blends into the bright page */
+.medilife-loading-inline {
+  background-color: color-mix(in oklab, var(--muted) 65%, white);
+  background-image: radial-gradient(62% 60% at 50% 0%, color-mix(in oklab, var(--primary) 12%, transparent) 0%, transparent 72%);
+  border-radius: var(--radius-lg);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in oklab, var(--border) 85%, transparent),
+    0 22px 44px -28px color-mix(in oklab, var(--foreground) 45%, transparent);
+}
+.medilife-loading-inline::after {
+  background: radial-gradient(34% 24% at 50% 50%, color-mix(in oklab, var(--primary) 18%, transparent) 0%, transparent 70%);
+}
+.medilife-loading-inline .medilife-loading-wordmark {
+  filter: drop-shadow(0 14px 24px color-mix(in oklab, var(--foreground) 20%, transparent));
+}
+.medilife-loading-inline .medilife-loading-word-med,
+.medilife-loading-inline .medilife-loading-word-life {
+  background-image: linear-gradient(
+    100deg,
+    color-mix(in oklab, var(--foreground) 85%, transparent) 0%,
+    var(--foreground) 36%,
+    color-mix(in oklab, var(--primary) 65%, var(--foreground)) 50%,
+    var(--foreground) 64%,
+    color-mix(in oklab, var(--foreground) 85%, transparent) 100%
+  );
+}
+.medilife-loading-inline .medilife-loading-bar {
+  background: color-mix(in oklab, var(--foreground) 10%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in oklab, var(--border) 70%, transparent);
+}
+.medilife-loading-inline .medilife-loading-label {
+  color: color-mix(in oklab, var(--muted-foreground) 92%, transparent);
+}
+
 /* ===== Fullscreen image viewer (branch photos) ===== */
 .medilife-zoom-overlay {
   background-color: rgba(3, 5, 4, 0.94);

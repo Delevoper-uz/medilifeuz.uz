@@ -11,7 +11,7 @@ export function AppLoading({ fullscreen = false, leaving = false }: { fullscreen
       aria-label="Yuklanmoqda"
       className={cn(
         "medilife-loading flex flex-col items-center justify-center gap-7",
-        fullscreen ? "fixed inset-0 z-[100] p-6" : "min-h-64 w-full py-12",
+        fullscreen ? "fixed inset-0 z-[100] p-6" : "medilife-loading-inline min-h-64 w-full py-12",
         leaving && "medilife-loading-leaving",
       )}
     >
@@ -21,7 +21,7 @@ export function AppLoading({ fullscreen = false, leaving = false }: { fullscreen
         <span className="medilife-loading-word-life">LIFE</span>
       </div>
       <span aria-hidden="true" className="medilife-loading-bar" />
-      <p className="relative z-[1] text-sm font-medium tracking-wide text-white/55">Yuklanmoqda…</p>
+      <p className="medilife-loading-label relative z-[1] text-sm font-medium tracking-wide">Yuklanmoqda…</p>
     </div>
   );
 }
