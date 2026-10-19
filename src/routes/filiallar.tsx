@@ -6,6 +6,7 @@ import { Phone, MapPin, ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { ZoomImage } from "@/components/ZoomImage";
 
 export const Route = createFileRoute("/filiallar")({
   component: BranchesPage,
