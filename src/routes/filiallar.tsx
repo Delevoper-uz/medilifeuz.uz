@@ -44,14 +44,7 @@ function BranchesPage() {
             const yandexEmbed = b.yandex_map_url ? `https://yandex.uz/map-widget/v1/?text=${q}&z=15&l=map` : null;
             return (
               <Card key={b.id} className="overflow-hidden reveal-up lift-hover">
-                {b.image_url && (
-                  <img
-                    src={b.image_url}
-                    alt={b.name}
-                    className="w-full h-48 object-cover"
-                    onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
-                  />
-                )}
+                {b.image_url && <ZoomImage src={b.image_url} alt={b.name} className="h-48" />}
                 <div className="p-5 space-y-3">
                   <h3 className="text-xl font-semibold">{b.name}</h3>
                   {b.address && <p className="text-sm flex items-start gap-2"><MapPin className="h-4 w-4 mt-0.5 text-primary shrink-0" />{b.address}</p>}
