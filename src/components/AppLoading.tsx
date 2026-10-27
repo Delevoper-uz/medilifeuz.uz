@@ -45,7 +45,7 @@ export function GlobalLoading() {
         if (!disposed) setStartup(false);
       }, 300);
     };
-    const holdTimer = setTimeout(finish, 900);
+    const holdTimer = setTimeout(finish, 120);
     return () => {
       disposed = true;
       clearTimeout(holdTimer);

@@ -19,7 +19,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { PresenceTracker } from "@/components/PresenceTracker";
 import { GlobalLoading } from "@/components/AppLoading";
 
-import "@/lib/i18n";
+import { syncClientLanguage } from "@/lib/i18n";
 
 function NotFoundComponent() {
   return (
@@ -111,6 +111,14 @@ function AdminHotkey() {
 
 function RootComponent() {
   const [queryClient] = useState(() => new QueryClient());
+  useEffect(() => {
+    syncClientLanguage();
+    const onStorage = (event: StorageEvent) => {
+      if (event.key === "medilife-lang") syncClientLanguage();
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
