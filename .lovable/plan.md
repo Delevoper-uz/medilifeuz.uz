@@ -1,57 +1,27 @@
-# MediLife — Dorixona sayti
+# MediLife: tez ochilish va mustaqil server
 
-Yashil brendli (logo: yashil yurak + MediLife) onlayn dorixona. Quyidagi bosqichlarda quraman, har bosqich tugagach ko'rib chiqasiz.
+## Siz oladigan natija
+- Ochilishdagi keraksiz kutish kamayadi; qora fondagi «MED I LIFE» animatsiyasi saqlanadi.
+- Tanlangan til (lotin/kirill) va qorong‘i/yorug‘ rejim qayta ochilganda ham saqlanadi. Yuklanish yozuvi ham mos tilda chiqadi.
+- Kompyuteringizda yoki Linux serverda ishlaydigan alohida backend va unga ulangan sayt nusxasi ZIP shaklida tayyorlanadi. Ma’lumotlar o‘zingizdagi diskda saqlanadi; Lovable bazasi yoki Lovable API kaliti talab qilinmaydi.
+- Mavjud Telegram botlari va boshqa xizmatlarning sozlamalari o‘zgartirilmaydi.
 
-## Texnologiyalar
-- TanStack Start + React + Tailwind (dizayn tizimi yashil ohangda)
-- **Lovable Cloud** — auth (Google + email/parol), ma'lumotlar bazasi (dorilar, yangiliklar, filiallar, buyurtmalar, sharhlar, foydalanuvchi rollari), fayl yuklash (dori/yangilik/filial rasmlari)
-- Google Maps JS API (filiallar uchun)
-- Telegram Bot API — buyurtmalar avtomatik `Telegram_id` ga yuboriladi
-- i18next — uz / ru / en
-- Dark/Light mode (class-based)
+## Bajariladigan ishlar
+1. Ochilishda kuzatilgan til nomuvofiqligini tuzatish, sozlamalarni xavfsiz tiklash va sun’iy kutishni kamaytirish.
+2. Oldingi mustaqil server arxivini asos qilib, dorilar, yangiliklar, filiallar, doktorlar, buyurtmalar, admin ishlari va rasmlar saqlanishini moslashtirish. Saytning alohida nusxasini shu serverga ulash.
+3. Telefon/kod va admin kirishini o‘z serveriga moslashtirish; Telegram xabarlarining mazmuni, tugmalari va ishlash tartibini saqlash. Amaldagi bot manzillarini avtomatik almashtirmaslik.
+4. Kompyuter/Linux uchun ishga tushirish, ma’lumot ko‘chirish, zaxira olish va tiklash bo‘yicha o‘zbekcha yo‘riqnoma berish. Shaxsiy kalitlarni arxivga kiritmaslik.
+5. Til/rejim saqlanishini, serverda ma’lumot yozish-o‘qishni, rasm yuklashni va arxiv tarkibini tekshirish.
 
-## Bosqich 1 — Fundament va dizayn
-- Logo yuklash (`src/assets/medilife-logo.jpg`)
-- Yashil dizayn tizimi (`styles.css`: primary = yashil oklch, dark/light tokenlar)
-- Layout: tepada **markazda sticky navbar** — Bosh Menyu • Yangiliklar • Dorilar • Bizning Filiallar • Savatcha (badge bilan) • Til (uz/ru/en) • 🌙 Tema • 👤 Profil (o'ng tepada)
-- Marshrutlar: `/`, `/yangiliklar`, `/dorilar`, `/filiallar`, `/savatcha`, `/profil`, `/buyurtmalarim`, `/login`, `/register`
-- Footer: Aloqa (+998 91 362 00 80, Ismoil, gnnon030@gmail.com), © 2000
+## Chegaralar
+- «5G sifatida»ni tez va ravon ochilish deb tushunaman; internet yoki kompyuter tezligini sayt bilan kafolatlab bo‘lmaydi.
+- Jonli saytni uzib qo‘ymayman, mavjud bazani o‘chirmayman. Mustaqil nusxa siz uni ishga tushirgandan keyin o‘z serveringizdan foydalanadi.
+- Telegram internet talab qiladi. Uni yangi serverga o‘tkazish ko‘rsatmasi beriladi, ammo hozirgi bot sozlamalariga tegilmaydi.
+- Retseptni o‘qish hozir Lovable AIga bog‘langan. Mustaqil nusxada Lovable kaliti ishlatilmaydi: kompyuterda ishlaydigan modelni ulash ko‘rsatmasi beriladi. Uni o‘rnatmaguncha rasmni o‘qish ishlamaydi; rasm avtomatik Telegramga yuborilmaydi. Tezlik va sifat qurilmaga bog‘liq.
+- Mavjud shaxsiy buyurtmalar va maxfiy ma’lumotlar oddiy ZIPga qo‘shilmaydi; ularni xavfsiz ko‘chirish tartibi beriladi.
 
-## Bosqich 2 — Lovable Cloud + Auth
-- Cloud yoqaman
-- Jadvallar: `profiles` (id, full_name, phone, email, language, theme), `user_roles` (admin role), `news`, `medicines`, `branches`, `orders`, `order_items`, `reviews`
-- RLS siyosatlari + `has_role()` SECURITY DEFINER funksiya
-- Google OAuth + email/parol auth
-- Telefon raqam `+998 90 123 45 67` formatlash (prefix qulflangan), majburiy
-- Parol + tasdiqlash (mos kelishi tekshiriladi)
-- Google bilan kirgan foydalanuvchidan telefon yo'q bo'lsa — onboarding bosqichida so'raladi
-
-## Bosqich 3 — Asosiy sahifalar
-- **Bosh sahifa (hero + qisqacha)**
-- **Yangiliklar**: katta avtomatik karusel banner (2 sek), chap/o'ng strelka, chap pastda matn — admin qo'shadi
-- **Dorilar**: katalog, har karta — rasm, nom, narx, miqdor (1 dona / 1 paket / 1g), **+** tugma (savatchaga qo'shadi → toast bildirishnoma "{nom} savatchaga qo'shildi"), agar savatchada bor bo'lsa **− / soni / +** ko'rinadi (− toast: "{nom} savatchadan olib tashlandi"), savatchada yo'q bo'lsa faqat **+**
-- **Filiallar**: kartalar (rasm, telefon, matnli manzil, Google Maps embed)
-
-## Bosqich 4 — Savatcha va buyurtma
-- Savatcha 2 ta tab:
-  1. **Savatcha** — dorilar ro'yxati, jami; "Kuryer 10:00–22:00 bepul" eslatma; Namangan vaqti (Asia/Tashkent) avtomatik ko'rsatiladi
-  2. **Rasmiylashtirish** — ism, telefon, ro'yxat, yetkazish: **O'zim olib ketaman** / **Kuryer orqali**. Vaqt 10:00–22:00 dan tashqarida bo'lsa kuryerga +20 000 so'm avtomatik qo'shiladi
-- Buyurtma yuborilganda **Telegram botga** to'liq ma'lumot yuboriladi (server function orqali)
-
-## Bosqich 5 — Profil, buyurtmalar, sharhlar
-- Profil: ma'lumotlar, til, tema
-- **Buyurtmalarim**: holat, mahsulotlar
-- Yetkazilgan buyurtmaga **sharh + reyting 0–10**
-
-## Bosqich 6 — Admin panel
-- Maxfiy ochish: **Alt+Shift+5** klaviatura kombinatsiyasi (faqat admin role bo'lsa)
-- Tablar: **Yangiliklar** (CRUD) • **Dorilar** (CRUD, rasm: URL yoki upload, narx, miqdor, ta'rif, ombor — buyurtma kelganda kamayadi) • **Filiallar** (CRUD + rasm + telefon + manzil + Google Maps URL) • **Buyurtmalar** (barcha buyurtmalar ro'yxati, holat o'zgartirish)
-
-## Bosqich 7 — Integratsiyalar
-- Google Maps API key (siz bergan) — `index.html` ga script
-- Telegram bot token va chat ID **secrets** ga saqlanadi (kodda ochiq qoldirilmaydi) — server function buyurtmani `sendMessage` orqali yuboradi
-
-## Eslatma
-Bu juda katta hajm. Avval **Bosqich 1–3** ni qilib ko'rsataman (sayt asosi, dizayn, auth, katalog, yangiliklar, filiallar). Tasdiqlasangiz keyin savatcha + admin + Telegram qismlariga o'taman. Bu sifatni saqlab qolish uchun eng yaxshi yo'l.
-
-Tasdiqlaysizmi?
+## Texnik yechim
+- Sayt TanStack Start/Reactda qoladi. Kompyuter uchun server kodi jonli Worker nusxasiga qo‘shilmaydi.
+- Mustaqil backend mahalliy PostgreSQL va diskdagi fayllardan foydalanadi; Docker Compose bilan kompyuter/Linuxda ishga tushiriladi.
+- Ulanish Lovable API kaliti bilan emas, o‘z server manzili va foydalanuvchi/admin sessiyasi orqali bo‘ladi. Ruxsatlar server tomonida tekshiriladi.
+- Til va mavzu localStorage’dan sahifa tayyor bo‘lgandan keyin tiklanadi; i18n yuklanishida brauzer yon ta’siri bo‘lmaydi.
