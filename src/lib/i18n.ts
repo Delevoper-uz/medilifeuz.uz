@@ -1,5 +1,6 @@
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
+import { readPreference, savedLanguage, writePreference } from "@/lib/preferences";
 
 const resources = {
   uz_cyrl: {
@@ -41,13 +42,18 @@ if (!i18n.isInitialized) {
     fallbackLng: "uz_cyrl",
     interpolation: { escapeValue: false },
   });
-  if (typeof window !== "undefined") {
-    const stored = localStorage.getItem("medilife-lang");
-    if (stored && ["uz_cyrl", "uz"].includes(stored) && stored !== "uz_cyrl") {
-      // Sahifa to'liq yuklangandan keyin tilni qo'llaymiz (hydration xatosiz)
-      setTimeout(() => i18n.changeLanguage(stored), 0);
-    }
-  }
+}
+
+export function syncClientLanguage() {
+  const language = savedLanguage(readPreference("medilife-lang"));
+  void i18n.changeLanguage(language);
+  document.documentElement.lang = language === "uz" ? "uz-Latn" : "uz-Cyrl";
+}
+
+export function changeClientLanguage(language: "uz" | "uz_cyrl") {
+  writePreference("medilife-lang", language);
+  void i18n.changeLanguage(language);
+  document.documentElement.lang = language === "uz" ? "uz-Latn" : "uz-Cyrl";
 }
 
 export default i18n;

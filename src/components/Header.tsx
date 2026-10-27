@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useCart } from "@/hooks/use-cart";
 import { useTheme } from "@/hooks/use-theme";
-import i18n from "@/lib/i18n";
+import i18n, { changeClientLanguage } from "@/lib/i18n";
 
 const NAV: { to: string; key: string; exact?: boolean }[] = [
   { to: "/", key: "nav.home", exact: true },
@@ -24,12 +24,7 @@ export function Header() {
   const { theme, toggle } = useTheme();
   const [open, setOpen] = useState(false);
 
-  const changeLang = (lng: string) => {
-    i18n.changeLanguage(lng);
-    localStorage.setItem("medilife-lang", lng);
-  };
-
-  const langLabel = i18n.language === "uz_cyrl" ? "RUS" : "UZ";
+  const langLabel = i18n.language === "uz_cyrl" ? "ЎЗ" : "UZ";
   const linkCls = "px-3 py-2 rounded-md text-sm font-medium hover:bg-accent transition-colors";
 
   return (
@@ -60,7 +55,7 @@ export function Header() {
             size="sm"
             className="font-semibold px-2"
             aria-label="language"
-            onClick={() => changeLang(i18n.language === "uz_cyrl" ? "uz" : "uz_cyrl")}
+            onClick={() => changeClientLanguage(i18n.language === "uz_cyrl" ? "uz" : "uz_cyrl")}
           >
             {langLabel}
           </Button>
