@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { readPreference, savedLanguage, savedTheme, writePreference } from "./preferences";
+import { readPreference, savedLanguage, savedTheme, writePreference } from "../src/lib/preferences";
 
 describe("saved user choices", () => {
   it("keeps Uzbek Latin selected", () => {
