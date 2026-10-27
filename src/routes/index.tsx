@@ -85,12 +85,27 @@ function Home() {
 
   const { data: medicines = [], isLoading: medsLoading } = useQuery({
     queryKey: ["medicines-home", currentLang],
+    staleTime: 0,
     queryFn: async () => {
-      const { data } = await supabase.from("medicines").select("*").eq("language", currentLang).order("created_at", { ascending: false }).limit(8);
-      if (data && data.length) return data as Medicine[];
-      // Agar tanlangan tilda dori bo'lmasa — mavjud dorilarni ko'rsatamiz
-      const { data: fallback } = await supabase.from("medicines").select("*").order("created_at", { ascending: false }).limit(8);
-      return (fallback ?? []) as Medicine[];
+      const pick = async (withLang: boolean) => {
+        let cq = supabase.from("medicines").select("id", { count: "exact", head: true });
+        if (withLang) cq = cq.eq("language", currentLang);
+        const { count } = await cq;
+        const total = count ?? 0;
+        if (!total) return [] as Medicine[];
+        const offset = total > 40 ? Math.floor(Math.random() * (total - 40)) : 0;
+        let q = supabase.from("medicines").select("*").order("id", { ascending: Math.random() < 0.5 });
+        if (withLang) q = q.eq("language", currentLang);
+        const { data } = await q.range(offset, offset + 39);
+        const arr = [...((data ?? []) as Medicine[])];
+        for (let i = arr.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [arr[i], arr[j]] = [arr[j] as Medicine, arr[i] as Medicine];
+        }
+        return arr.slice(0, 8);
+      };
+      const rows = await pick(true);
+      return rows.length ? rows : await pick(false);
     },
   });
 
