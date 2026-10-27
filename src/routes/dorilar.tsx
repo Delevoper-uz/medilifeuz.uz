@@ -52,7 +52,7 @@ function MedicinesPage() {
   const { data: filtered = [], isLoading, isFetching, isError, refetch } = useQuery({
     queryKey: ["medicines-search", currentLang, dq, minPrice, maxPrice, sort],
     placeholderData: keepPreviousData,
-    staleTime: 2 * 60 * 1000,
+    staleTime: sort === "random" ? 0 : 2 * 60 * 1000,
     retry: 3,
     retryDelay: (a) => Math.min(1000 * 2 ** a, 5000),
     queryFn: async () => {
@@ -69,8 +69,20 @@ function MedicinesPage() {
         if (max > 0) query = query.lte("price", max);
         if (sort === "price-asc") query = query.order("price", { ascending: true });
         else if (sort === "price-desc") query = query.order("price", { ascending: false });
+        else if (sort === "random") query = query.order("id", { ascending: Math.random() < 0.5 });
         else query = query.order(currentLang === "cyrillic" ? "name_cyrl" : "name", { ascending: sort === "az" });
-        const { data, error } = await query.limit(PAGE_SIZE);
+        let offset = 0;
+        if (sort === "random") {
+          let cq = supabase.from("medicines").select("id", { count: "exact", head: true });
+          if (withLang) cq = cq.eq("language", currentLang);
+          for (const tok of tokens(dq)) cq = cq.or(`name.ilike.%${tok}%,name_cyrl.ilike.%${tok}%`);
+          if (min > 0) cq = cq.gte("price", min);
+          if (max > 0) cq = cq.lte("price", max);
+          const { count } = await cq;
+          const total = count ?? 0;
+          if (total > PAGE_SIZE) offset = Math.floor(Math.random() * (total - PAGE_SIZE));
+        }
+        const { data, error } = await query.range(offset, offset + PAGE_SIZE - 1);
         if (error) throw new Error(error.message);
         return (data ?? []) as Medicine[];
       };
