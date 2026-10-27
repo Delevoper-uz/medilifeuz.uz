@@ -6,6 +6,7 @@ import {
   HeadContent,
   Scripts,
   Link,
+  ClientOnly,
 } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useNavigate, type ErrorComponentProps } from "@tanstack/react-router";
@@ -17,7 +18,7 @@ import { AuthProvider } from "@/hooks/use-auth";
 import { CartProvider } from "@/hooks/use-cart";
 import { Toaster } from "@/components/ui/sonner";
 import { PresenceTracker } from "@/components/PresenceTracker";
-import { GlobalLoading } from "@/components/AppLoading";
+import { AppLoading, GlobalLoading } from "@/components/AppLoading";
 
 import { syncClientLanguage } from "@/lib/i18n";
 
@@ -111,8 +112,10 @@ function AdminHotkey() {
 
 function RootComponent() {
   const [queryClient] = useState(() => new QueryClient());
+  const [preferencesReady, setPreferencesReady] = useState(false);
   useEffect(() => {
     syncClientLanguage();
+    setPreferencesReady(true);
     const onStorage = (event: StorageEvent) => {
       if (event.key === "medilife-lang") syncClientLanguage();
     };
@@ -127,7 +130,9 @@ function RootComponent() {
           <div className="min-h-screen flex flex-col">
             <Header />
             <main className="flex-1">
-              <Outlet />
+              <ClientOnly fallback={<AppLoading />}>
+                {preferencesReady ? <Outlet /> : <AppLoading />}
+              </ClientOnly>
             </main>
             <Footer />
           </div>
