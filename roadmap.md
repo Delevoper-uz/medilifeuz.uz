@@ -1,5 +1,10 @@
 # Requested work
 
+- [ ] Add controlled published-app offline support, cached medicines-only view, and best-effort refresh/gesture prevention.
+- [ ] Enlarge the support phone action and show full Instagram/Telegram names; use one medicine image for offline entries.
+- [ ] Verify Telegram operator callbacks end-to-end without changing the existing bot configuration.
+- [ ] Keep the downloadable ZIP unchanged until explicitly requested.
+
 - [x] Search the full catalogue with bounded result pages for public/admin searches and full-name-first AI matching; no capacity advertising.
 - [x] Tie prescription requests to a private anonymous browser capability; do not collect or share IP addresses.
 - [x] Add per-request Telegram operator claim, add, preview, remove, undo and send controls.
