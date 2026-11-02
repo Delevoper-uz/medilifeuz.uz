@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
+import type { DeliveryKey } from "./operator-model";
 
 export type AiMedicine = {
   id: string;
@@ -32,6 +33,7 @@ export type AiSearchResult = {
   missing: string[];
   sentToTelegram: boolean;
   message: string;
+  operatorRequest?: DeliveryKey;
 };
 
 function publicClient() {
@@ -84,7 +86,10 @@ async function lookupOne(
     supabase.from("medicines").select(SELECT).or(`name.ilike.%${term}%,name_cyrl.ilike.%${term}%`).limit(limit);
 
   if (first) {
-    const { data } = await q(first, 80);
+    // Rank full-name matches in the database before the bounded candidate page.
+    const fullTerm = clean(name);
+    const fullResult = fullTerm ? await q(fullTerm, 100) : { data: [] };
+    const { data } = fullResult.data?.length ? fullResult : await q(first, 100);
     const rows = (data ?? []) as AiMedicine[];
     if (rows.length) {
       // Barcha so'zlar (qisqa "A" kabi harflar ham) bo'yicha ball beramiz
@@ -263,14 +268,17 @@ export const analyzeMedicineImage = createServerFn({ method: "POST" })
       }
     }
     if (!names.length) {
+      const { createOperatorRequest } = await import("./operator.server");
+      const operatorRequest = await createOperatorRequest(data.imageDataUrl, "AI retseptni o‘qiy olmadi.");
       return {
         ok: false,
         names: [],
         groups: [],
         found: [],
         missing: [],
-        sentToTelegram: false,
-        message: "AI rasmni o'qiy olmadi. Aniqroq rasm yuklang yoki operatorga yuboring.",
+        sentToTelegram: true,
+        operatorRequest,
+        message: "Retsept operatorga yuborildi. Javob kutilmoqda.",
       };
     }
     return buildResult(names, await lookupGroups(names));
@@ -284,23 +292,15 @@ export const sendPrescriptionToOperators = createServerFn({ method: "POST" })
     return { imageDataUrl: input.imageDataUrl, note: String(input.note ?? "").slice(0, 500) };
   })
   .handler(async ({ data }) => {
-    const sent = await sendImageToTelegram(
-      data.imageDataUrl,
-      `📋 Mijoz retseptdagi dorilarni topa olmadi.${data.note ? `\nTopilmaganlar: ${data.note}` : ""}\nIltimos, dorilar nomini matn ko'rinishida yozib yuboring.`,
-    );
-    return { ok: sent };
+    const { createOperatorRequest } = await import("./operator.server");
+    const operatorRequest = await createOperatorRequest(data.imageDataUrl, data.note);
+    return { ok: true, operatorRequest };
   });
 
 /** Telegram botdan "BO'LDI SHULAR" bilan yuborilgan oxirgi ro'yxatni qaytaradi. */
 export const getBotSharedList = createServerFn({ method: "GET" }).handler(async (): Promise<AiSearchResult> => {
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const supabase = supabaseAdmin as unknown as { from: (t: string) => any };
-  const { data } = await supabase
-    .from("bot_shared_lists")
-    .select("names, created_at")
-    .order("created_at", { ascending: false })
-    .limit(1);
-  const names: string[] = (data ?? [])[0]?.names ?? [];
+  // Never expose another customer's last prescription through a public function.
+  const names: string[] = [];
   if (!names.length) {
     return {
       ok: false,

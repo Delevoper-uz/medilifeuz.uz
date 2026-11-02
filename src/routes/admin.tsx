@@ -39,7 +39,6 @@ import { adminListPresence } from "@/lib/presence.functions";
 import { adminDeleteDoctor, adminListAppointments, adminListDoctors, adminSaveDoctor, adminSetAppointmentStatus } from "@/lib/admin-doctors.functions";
 import * as XLSX from "xlsx";
 import { matchesSearch } from "@/lib/search";
-import { BotListNotifier } from "@/components/BotListNotifier";
 
 
 export const Route = createFileRoute("/admin")({
@@ -129,7 +128,6 @@ function AdminPage() {
           <LogOut className="h-4 w-4" /> Chiqish
         </Button>
       </div>
-      <BotListNotifier />
       <Tabs defaultValue="news">
         <TabsList className="flex-wrap h-auto">
           <TabsTrigger value="news">Yangiliklar</TabsTrigger>

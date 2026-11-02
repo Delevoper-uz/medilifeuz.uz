@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { ImagePlus, Sparkles, Loader2, X, Send, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MedicineCard, type Medicine } from "@/components/MedicineCard";
+import { useOperatorDelivery } from "@/components/OperatorDelivery";
 import {
   analyzeMedicineImage,
   getBotSharedList,
@@ -108,6 +109,7 @@ function GroupPicker({ index, group: rawGroup }: { index: number; group: AiGroup
 
 /** Retsept / dorilar ro'yxati rasmini AI orqali tahlil qilish bloki. */
 export function AiListSearch() {
+  const { track } = useOperatorDelivery();
   const analyze = useServerFn(analyzeMedicineImage);
   const fromBot = useServerFn(getBotSharedList);
   const toOperators = useServerFn(sendPrescriptionToOperators);
@@ -161,6 +163,7 @@ export function AiListSearch() {
     try {
       const res = await analyze({ data: { imageDataUrl: dataUrl } });
       setResult(res);
+      if (res.operatorRequest) { track(res.operatorRequest); setSent(true); }
       if (res.ok) toast.success(res.message);
       else toast.warning(res.message, { duration: 6000 });
     } catch (e) {
@@ -183,6 +186,7 @@ export function AiListSearch() {
     try {
       const r = await toOperators({ data: { imageDataUrl: preview, note: result?.missing.join(", ") } });
       if (r.ok) {
+        track(r.operatorRequest);
         setSent(true);
         toast.success("Rasm operatorlarga yuborildi");
       } else toast.error("Yuborib bo'lmadi");
@@ -218,28 +222,6 @@ export function AiListSearch() {
         <Button onClick={() => inputRef.current?.click()} disabled={loading} className="gap-2">
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImagePlus className="h-4 w-4" />}
           Rasm yuklash
-        </Button>
-        <Button
-          variant="secondary"
-          className="gap-2"
-          disabled={botLoading}
-          onClick={async () => {
-            setBotLoading(true);
-            try {
-              const res = await fromBot();
-              setPreview(null);
-              setResult(res);
-              if (res.ok) toast.success(res.message);
-              else toast.warning(res.message);
-            } catch (e) {
-              toast.error(e instanceof Error ? e.message : "Ro'yxat olinmadi");
-            } finally {
-              setBotLoading(false);
-            }
-          }}
-        >
-          {botLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-          Botdan kelgan ro'yxat
         </Button>
         {(preview || result) && (
           <Button variant="ghost" size="icon" onClick={reset} aria-label="tozalash">
