@@ -60,6 +60,7 @@ function CartPage() {
     const [addressText, setAddressText] = useState("");
   const [addressYandex, setAddressYandex] = useState("");
   const [addressYandexUrl, setAddressYandexUrl] = useState<string | undefined>();
+  const [coords, setCoords] = useState<[number, number] | undefined>();
   const [note, setNote] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -97,6 +98,8 @@ function CartPage() {
           customer_phone: phone,
           address: finalAddress,
           map_url: mapUrl ?? null,
+          lat: addrMethod === "yandex" && coords ? coords[0] : null,
+          lng: addrMethod === "yandex" && coords ? coords[1] : null,
           note: note || null,
           items: items.map((i) => ({ medicine_id: i.id, quantity: i.quantity })),
         },
@@ -213,7 +216,7 @@ function CartPage() {
                   </TabsContent>
 
                   <TabsContent value="yandex" className="space-y-2 mt-3">
-                    <YandexAddressPicker onPick={(a, url) => { setAddressYandex(a); setAddressYandexUrl(url); }} />
+                    <YandexAddressPicker onPick={(a, url, c) => { setAddressYandex(a); setAddressYandexUrl(url); setCoords(c); }} />
                     {addressYandex && (
                       <p className="text-sm"><span className="text-muted-foreground">{t("cart.address_picked")}:</span> <span className="font-medium">{addressYandex}</span></p>
                     )}
