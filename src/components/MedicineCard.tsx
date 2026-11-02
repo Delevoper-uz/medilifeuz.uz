@@ -50,9 +50,10 @@ export function MedicineCard({ m }: { m: Medicine }) {
       <div className="aspect-square bg-muted overflow-hidden flex items-center justify-center p-2">
         {imageUrl ? (
           <img
+            key={imageUrl}
             src={imageUrl}
             alt={displayName}
-            loading="lazy"
+            loading={offline ? 'eager' : 'lazy'}
             referrerPolicy="no-referrer"
             className="mx-auto max-h-full max-w-full object-contain group-hover:scale-105 transition-transform"
             onError={(e) => {
