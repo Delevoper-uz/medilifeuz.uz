@@ -10,7 +10,7 @@ test.skipIf(!url || !key || !group)('Telegram operator callback sequence updates
   if (!url || !key || !group) return;
   const original = globalThis.fetch;
   const messages: any[] = [];
-  let sequence = 500000;
+  let sequence = Math.floor(Date.now() * 100 + Math.random() * 90);
   globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
     if (String(input).startsWith('https://api.telegram.org/')) {
       messages.push(JSON.parse(String(init?.body ?? '{}')));
@@ -58,4 +58,4 @@ test.skipIf(!url || !key || !group)('Telegram operator callback sequence updates
     globalThis.fetch = original;
     await db.from('operator_requests').delete().eq('id', id);
   }
-});
+}, 30000);

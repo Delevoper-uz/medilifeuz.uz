@@ -13,11 +13,13 @@ export default defineConfig({
   vite: { plugins: [VitePWA({
     strategies: 'generateSW',
     filename: 'sw.js',
+    outDir: 'dist/client',
     manifest: false,
     injectRegister: null,
     registerType: 'autoUpdate',
     devOptions: { enabled: false },
     workbox: {
+      swDest: 'dist/client/sw.js',
       skipWaiting: true,
       clientsClaim: true,
       globPatterns: ['**/*.{js,css,woff2,ico}'],
