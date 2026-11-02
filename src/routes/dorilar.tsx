@@ -149,21 +149,21 @@ function MedicinesPage() {
       {!offline && <AiListSearch />}
 
       <div className="flex flex-wrap items-center gap-2 mb-6 p-3 rounded-lg border bg-card">
-        <span className="text-sm font-medium">Narx:</span>
+        <span className="text-sm font-medium">{i18n.language === 'uz_cyrl' ? 'Нарх:' : 'Narx:'}</span>
         <Input type="number" placeholder="1 000" value={minPrice} onChange={(e) => setMinPrice(e.target.value)} className="w-28" />
         <span className="text-muted-foreground">—</span>
         <Input type="number" placeholder="100 000" value={maxPrice} onChange={(e) => setMaxPrice(e.target.value)} className="w-28" />
-        <span className="text-sm text-muted-foreground">so'm</span>
+        <span className="text-sm text-muted-foreground">{t('common.sum')}</span>
         <div className="ml-auto flex items-center gap-2">
-          <span className="text-sm font-medium">Saralash:</span>
+          <span className="text-sm font-medium">{i18n.language === 'uz_cyrl' ? 'Саралаш:' : 'Saralash:'}</span>
           <Select value={sort} onValueChange={(v) => setSort(v as typeof sort)}>
             <SelectTrigger className="w-44"><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="random">Aralash</SelectItem>
+              <SelectItem value="random">{i18n.language === 'uz_cyrl' ? 'Аралаш' : 'Aralash'}</SelectItem>
               <SelectItem value="az">A → Z</SelectItem>
               <SelectItem value="za">Z → A</SelectItem>
-              <SelectItem value="price-asc">Narx: arzon → qimmat</SelectItem>
-              <SelectItem value="price-desc">Narx: qimmat → arzon</SelectItem>
+              <SelectItem value="price-asc">{i18n.language === 'uz_cyrl' ? 'Нарх: арзон → қиммат' : 'Narx: arzon → qimmat'}</SelectItem>
+              <SelectItem value="price-desc">{i18n.language === 'uz_cyrl' ? 'Нарх: қиммат → арзон' : 'Narx: qimmat → arzon'}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -181,8 +181,8 @@ function MedicinesPage() {
       ) : (
         <>
           <div className="text-xs text-muted-foreground mb-3">
-            Topildi: {total.toLocaleString("uz-UZ")} ta
-            {isFetching ? " · yuklanmoqda…" : ""}
+            {i18n.language === 'uz_cyrl' ? 'Топилди:' : 'Topildi:'} {total.toLocaleString("uz-UZ")} {i18n.language === 'uz_cyrl' ? 'та' : 'ta'}
+            {isFetching ? ` · ${t('common.loading')}` : ''}
           </div>
           {(offline || sort !== "random" || dq) && total > PAGE_SIZE && <div className="flex items-center justify-center gap-3 mt-6">
             <Button variant="outline" disabled={page === 0 || isFetching} onClick={() => setPage(p => p - 1)}>{i18n.language === "uz_cyrl" ? "Олдинги" : "Oldingi"}</Button>

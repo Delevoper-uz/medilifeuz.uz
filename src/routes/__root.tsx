@@ -128,9 +128,9 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <CartProvider>
+          <OfflineProvider>
           <OperatorDeliveryProvider>
           <GlobalLoading />
-          <OfflineProvider>
           <div className="min-h-screen flex flex-col">
             <Header />
             <main className="flex-1">
@@ -140,12 +140,12 @@ function RootComponent() {
             </main>
             <Footer />
           </div>
-          </OfflineProvider>
           <PresenceTracker />
           <AdminHotkey />
           <Toaster position="top-right" richColors />
 
           </OperatorDeliveryProvider>
+          </OfflineProvider>
         </CartProvider>
       </AuthProvider>
     </QueryClientProvider>

@@ -7,6 +7,7 @@ import { pollOperatorRequest } from "@/lib/operator.functions";
 import { OPERATOR_NOTICE_MS, type DeliveryKey } from "@/lib/operator-model";
 import { readPreference, writePreference } from "@/lib/preferences";
 import { useCart } from "@/hooks/use-cart";
+import { useOfflineMode } from './OfflineMode';
 const Context = createContext<{ track: (key: DeliveryKey) => void } | null>(null);
 const KEY = "medilife-operator-requests";
 export function OperatorDeliveryProvider({ children }: { children: ReactNode }) {
@@ -17,6 +18,7 @@ export function OperatorDeliveryProvider({ children }: { children: ReactNode }) 
   const navigate = useNavigate();
   const { i18n } = useTranslation();
   const audio = useRef<AudioContext | null>(null);
+  const { offline } = useOfflineMode();
   useEffect(() => {
     try { const data = JSON.parse(readPreference(KEY) || "[]"); if (Array.isArray(data)) setRequests(data.filter(k => typeof k?.id === "string" && typeof k?.secret === "string")); } catch {}
     setReady(true);
@@ -27,10 +29,11 @@ export function OperatorDeliveryProvider({ children }: { children: ReactNode }) 
   useEffect(() => { if (ready) writePreference(KEY, JSON.stringify(requests)); }, [requests, ready]);
   const track = useCallback((key: DeliveryKey) => setRequests(prev => prev.some(r => r.id === key.id) ? prev : [...prev, key]), []);
   useEffect(() => {
-    if (!ready || !requests.length) return;
+    if (!ready || !requests.length || offline) return;
     let stopped = false;
     let timer: ReturnType<typeof setTimeout>;
     const check = async () => {
+      if (!navigator.onLine) { if (!stopped) timer = setTimeout(check, 2000); return; }
       for (const key of requests) {
         try {
           const result = await poll({ data: key });
@@ -52,7 +55,7 @@ export function OperatorDeliveryProvider({ children }: { children: ReactNode }) 
     };
     void check();
     return () => { stopped = true; clearTimeout(timer); };
-  }, [requests, ready, poll, receiveOperator, navigate, i18n]);
+  }, [requests, ready, poll, receiveOperator, navigate, i18n, offline]);
   return <Context.Provider value={{ track }}>{children}</Context.Provider>;
 }
 export function useOperatorDelivery() { const ctx = useContext(Context); if (!ctx) throw new Error("Operator delivery context missing"); return ctx; }
