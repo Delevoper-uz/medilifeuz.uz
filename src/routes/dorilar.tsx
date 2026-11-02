@@ -98,7 +98,15 @@ function MedicinesPage() {
           const total = count ?? 0;
           if (total > PAGE_SIZE) offset = Math.floor(Math.random() * (total - PAGE_SIZE));
         }
-        const { data, error, count } = await query.range(offset, offset + PAGE_SIZE - 1);
+        let { data, error, count } = await query.range(offset, offset + PAGE_SIZE - 1);
+        if (error?.code === '57014' && sort === 'random' && !dq) {
+          let fallback = supabase.from('medicines').select('*').order('id').limit(PAGE_SIZE);
+          if (withLang) fallback = fallback.eq('language', currentLang);
+          if (min > 0) fallback = fallback.gte('price', min);
+          if (max > 0) fallback = fallback.lte('price', max);
+          const recovered = await fallback;
+          data = recovered.data; error = recovered.error; count = data?.length ?? 0;
+        }
         if (error) { window.dispatchEvent(new Event('medilife-network-failed')); throw new Error(error.message); }
         void saveOfflineMedicines((data ?? []) as Medicine[]).catch(() => undefined);
         return { rows: (data ?? []) as Medicine[], total: count ?? 0 };

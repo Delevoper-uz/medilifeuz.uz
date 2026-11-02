@@ -49,12 +49,16 @@ export function OfflineProvider({ children }: { children: React.ReactNode }) {
         if (cancelled) URL.revokeObjectURL(storedImage);
         else setImage(previous => { if (previous.startsWith('blob:')) URL.revokeObjectURL(previous); return storedImage; });
       }
-      for (let offset = 0; !cancelled && !controller.signal.aborted; offset += 1000) {
-        const { data, error } = await supabase.from('medicines').select('id,name,name_cyrl,price,unit,stock,description,image_url,language').order('id').range(offset, offset + 999).abortSignal(controller.signal);
+      let lastId: string | undefined;
+      for (; !cancelled && !controller.signal.aborted;) {
+        let batch = supabase.from('medicines').select('id,name,name_cyrl,price,unit,stock,description,image_url,language').order('id').limit(500);
+        if (lastId) batch = batch.gt('id', lastId);
+        const { data, error } = await batch.abortSignal(controller.signal);
         if (error || !data?.length || cancelled) break;
         await saveOfflineMedicines(data as Medicine[]);
-        if (data.length < 1000) break;
-        await new Promise(resolve => setTimeout(resolve, 500));
+        lastId = data[data.length - 1]?.id;
+        if (data.length < 500 || !lastId) break;
+        await new Promise(resolve => setTimeout(resolve, 1500));
       }
     })().catch(() => undefined);
     return () => { cancelled = true; controller.abort(); window.removeEventListener('offline', stop); };
