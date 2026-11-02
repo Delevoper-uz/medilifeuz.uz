@@ -20,6 +20,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { PresenceTracker } from "@/components/PresenceTracker";
 import { AppLoading, GlobalLoading } from "@/components/AppLoading";
 import { OperatorDeliveryProvider } from "@/components/OperatorDelivery";
+import { OfflineProvider } from '@/components/OfflineMode';
 
 import { syncClientLanguage } from "@/lib/i18n";
 
@@ -129,6 +130,7 @@ function RootComponent() {
         <CartProvider>
           <OperatorDeliveryProvider>
           <GlobalLoading />
+          <OfflineProvider>
           <div className="min-h-screen flex flex-col">
             <Header />
             <main className="flex-1">
@@ -138,6 +140,7 @@ function RootComponent() {
             </main>
             <Footer />
           </div>
+          </OfflineProvider>
           <PresenceTracker />
           <AdminHotkey />
           <Toaster position="top-right" richColors />

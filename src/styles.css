@@ -113,6 +113,11 @@
     overflow-x: hidden;
   }
 
+  html.medilife-offline,
+  html.medilife-offline body {
+    overscroll-behavior-y: none;
+  }
+
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
