@@ -34,7 +34,7 @@ function loadYmaps(): Promise<any> {
   });
 }
 
-export function YandexAddressPicker({ onPick }: { onPick: (address: string, mapUrl?: string) => void }) {
+export function YandexAddressPicker({ onPick }: { onPick: (address: string, mapUrl?: string, coords?: [number, number]) => void }) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -117,7 +117,7 @@ export function YandexAddressPicker({ onPick }: { onPick: (address: string, mapU
   const confirm = () => {
     if (picked) {
       const url = coords ? `https://yandex.com/maps/?ll=${coords[1]},${coords[0]}&z=17&pt=${coords[1]},${coords[0]}` : undefined;
-      onPick(picked, url);
+      onPick(picked, url, coords ? [coords[0], coords[1]] : undefined);
     }
     setOpen(false);
   };
