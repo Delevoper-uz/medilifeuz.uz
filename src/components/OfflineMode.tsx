@@ -28,6 +28,7 @@ export function OfflineProvider({ children }: { children: React.ReactNode }) {
     void readOfflineImage().then(url => { if (disposed) { if (url) URL.revokeObjectURL(url); return; } if (url) { imageUrl = url; setImage(url); } }).catch(() => undefined);
     const connection = (navigator as Navigator & { connection?: EventTarget & { effectiveType?: string } }).connection;
     const check = () => setUnavailable(!navigator.onLine || ['slow-2g', '2g'].includes(connection?.effectiveType ?? ''));
+    if (!navigator.onLine) setOffline(true);
     const failed = () => setUnavailable(true);
     check();
     window.addEventListener('online', check); window.addEventListener('offline', check);
@@ -43,6 +44,11 @@ export function OfflineProvider({ children }: { children: React.ReactNode }) {
     // Save the public catalogue in small batches; never cache private orders, OTPs or admin data.
     void (async () => {
       await saveOfflineImage(medicineImage.url).catch(() => undefined);
+      const storedImage = await readOfflineImage().catch(() => null);
+      if (storedImage) {
+        if (cancelled) URL.revokeObjectURL(storedImage);
+        else setImage(previous => { if (previous.startsWith('blob:')) URL.revokeObjectURL(previous); return storedImage; });
+      }
       for (let offset = 0; !cancelled && !controller.signal.aborted; offset += 1000) {
         const { data, error } = await supabase.from('medicines').select('id,name,name_cyrl,price,unit,stock,description,image_url,language').order('id').range(offset, offset + 999).abortSignal(controller.signal);
         if (error || !data?.length || cancelled) break;
