@@ -4,6 +4,7 @@ import { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { requireAdminPanel } from "@/lib/admin-middleware";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { CATALOG_SEARCH_CAPACITY, SEARCH_PAGE_SIZE } from "./operator-model";
 
 async function assertAdmin(userId: string) {
   const { data, error } = await supabaseAdmin
@@ -93,32 +94,24 @@ export const adminListMedicines = createServerFn({ method: "POST" })
   .middleware([requireAdminPanel])
   .inputValidator((i: unknown) =>
     z
-      .object({ language: z.enum(["latin", "cyrillic"]).optional(), search: z.string().max(100).optional(), changed: z.boolean().optional() })
+      .object({ language: z.enum(["latin", "cyrillic"]).optional(), search: z.string().max(100).optional(), changed: z.boolean().optional(), page: z.number().int().min(0).max(Math.ceil(CATALOG_SEARCH_CAPACITY / SEARCH_PAGE_SIZE) - 1).default(0) })
       .parse(i ?? {}),
   )
   .handler(async ({ data }) => {
-    // Baza juda katta (~1 mln) — faqat 300 ta qator va umumiy son qaytaramiz
+    // Search every database row; return a bounded page rather than the entire catalogue.
     let q = supabaseAdmin
       .from("medicines")
-      .select("id, name, name_cyrl, description, image_url, price, unit, stock, language, created_at, old_price, price_changed_at")
+      .select("id, name, name_cyrl, description, image_url, price, unit, stock, language, created_at, old_price, price_changed_at", { count: "exact" })
       .order(data.changed ? "price_changed_at" : "created_at", { ascending: false })
       .order("id", { ascending: false })
-      .limit(300);
+      .range(data.page * SEARCH_PAGE_SIZE, data.page * SEARCH_PAGE_SIZE + SEARCH_PAGE_SIZE - 1);
     if (data.language) q = q.eq("language", data.language);
     if (data.changed) q = q.not("price_changed_at", "is", null);
     const term = (data.search ?? "").replace(/[%,()*"'.:]/g, "").trim();
-    if (term.length >= 2) q = q.or(`name.ilike.%${term}%,name_cyrl.ilike.%${term}%`);
-    const { data: rows, error } = await q;
+    if (term.length) q = q.or(`name.ilike.%${term}%,name_cyrl.ilike.%${term}%`);
+    const { data: rows, error, count } = await q;
     if (error) throw new Error(error.message);
-    let total = rows?.length ?? 0;
-    if (data.language) {
-      const { count } = await supabaseAdmin
-        .from("medicines")
-        .select("id", { count: "estimated", head: true })
-        .eq("language", data.language);
-      total = count ?? total;
-    }
-    return { rows: rows ?? [], total };
+    return { rows: rows ?? [], total: count ?? 0 };
   });
 
 

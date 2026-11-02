@@ -35,6 +35,9 @@ export const Route = createFileRoute("/api/public/telegram/webhook")({
         if (!safeEqual(got, expected)) return new Response("Unauthorized", { status: 401 });
 
         const update = await request.json();
+        if (!Number.isSafeInteger(update?.update_id)) return new Response("Invalid update", { status: 400 });
+        const { handleOperatorUpdate } = await import("@/lib/operator.server");
+        if (await handleOperatorUpdate(update, token)) return Response.json({ ok: true });
 
         // 1) Filial tugmasi bosilganda buyurtmani qabul qilish
         const cb = update.callback_query;

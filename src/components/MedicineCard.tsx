@@ -21,7 +21,7 @@ export function MedicineCard({ m }: { m: Medicine }) {
   const { t, i18n } = useTranslation();
   const { items, add, remove } = useCart();
   const navigate = useNavigate();
-  const inCart = items.find((x) => x.id === m.id);
+  const inCart = items.find((x) => x.id === m.id && x.source !== "operator");
   const qty = inCart?.quantity ?? 0;
   const displayName = i18n.language === "uz_cyrl" && m.name_cyrl ? m.name_cyrl : m.name;
 

@@ -39,7 +39,6 @@ import { adminListPresence } from "@/lib/presence.functions";
 import { adminDeleteDoctor, adminListAppointments, adminListDoctors, adminSaveDoctor, adminSetAppointmentStatus } from "@/lib/admin-doctors.functions";
 import * as XLSX from "xlsx";
 import { matchesSearch } from "@/lib/search";
-import { BotListNotifier } from "@/components/BotListNotifier";
 
 
 export const Route = createFileRoute("/admin")({
@@ -129,7 +128,6 @@ function AdminPage() {
           <LogOut className="h-4 w-4" /> Chiqish
         </Button>
       </div>
-      <BotListNotifier />
       <Tabs defaultValue="news">
         <TabsList className="flex-wrap h-auto">
           <TabsTrigger value="news">Yangiliklar</TabsTrigger>
@@ -262,9 +260,11 @@ function MedicinesByLang({ lang }: { lang: "latin" | "cyrillic" }) {
     return () => clearTimeout(t);
   }, [search]);
   const [onlyChanged, setOnlyChanged] = useState(false);
+  const [page, setPage] = useState(0);
+  useEffect(() => setPage(0), [lang, debounced, onlyChanged]);
   const { data: res, refetch } = useQuery({
-    queryKey: ["admin-meds", lang, debounced, onlyChanged],
-    queryFn: () => listFn({ data: { language: lang, search: debounced, changed: onlyChanged } }),
+    queryKey: ["admin-meds", lang, debounced, onlyChanged, page],
+    queryFn: () => listFn({ data: { language: lang, search: debounced, changed: onlyChanged, page } }),
   });
   const data = (res?.rows ?? []) as any[];
   const totalCount = res?.total ?? 0;
@@ -369,7 +369,12 @@ function MedicinesByLang({ lang }: { lang: "latin" | "cyrillic" }) {
       </div>
       <Input placeholder="Qidirish (nomi bo'yicha)..." value={search} onChange={(e) => setSearch(e.target.value)} className="max-w-sm" />
       <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={onlyChanged} onChange={(e) => setOnlyChanged(e.target.checked)} /> Faqat narxi o'zgargan dorilar</label>
-      <div className="text-xs text-muted-foreground">Jami: ~{totalCount.toLocaleString("ru-RU")} ta {label} dori · Ko'rsatilmoqda: {data.length} ta (qidiruv orqali toping)</div>
+      <div className="text-xs text-muted-foreground">Topildi: {totalCount.toLocaleString("uz-UZ")} ta</div>
+      <div className="flex items-center gap-3">
+        <Button variant="outline" disabled={page === 0} onClick={() => setPage(p => p - 1)}>Oldingi</Button>
+        <span>{page + 1}</span>
+        <Button variant="outline" disabled={(page + 1) * 100 >= totalCount} onClick={() => setPage(p => p + 1)}>Keyingi</Button>
+      </div>
       <div className="grid md:grid-cols-2 gap-3">
         {data.map((m: any) => (
           <Card key={m.id} className="p-3 flex gap-3">

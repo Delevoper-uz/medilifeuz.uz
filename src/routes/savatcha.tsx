@@ -13,6 +13,7 @@ import { useCart } from "@/hooks/use-cart";
 import { formatPhone, isValidPhone } from "@/lib/phone";
 import { placeOrder } from "@/lib/orders.functions";
 import { YandexAddressPicker } from "@/components/YandexAddressPicker";
+import { cartEntryKey } from "@/lib/operator-model";
 
 export const Route = createFileRoute("/savatcha")({
   component: CartPage,
@@ -41,7 +42,7 @@ type AddrMethod = "text" | "yandex";
 /** To'lov uchun karta raqami (admin bergan raqam). */
 
 function CartPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { items, add, remove, setQty, clear, total, count } = useCart();
   const navigate = useNavigate();
 
@@ -130,8 +131,15 @@ function CartPage() {
             <p className="text-muted-foreground text-center py-12">{t("cart.empty")}</p>
           ) : (
             <>
-              {items.map((i) => (
-                <Card key={i.id} className="p-3 flex items-center gap-3">
+              {(["operator", "customer"] as const).map(source => {
+                const section = items.filter(i => (i.source ?? "customer") === source);
+                if (!section.length) return null;
+                return <section key={source} className="space-y-3">
+                  <h2 className="font-semibold text-lg">{source === "operator"
+                    ? (i18n.language === "uz_cyrl" ? "Оператор берган дорилар" : "Operator bergan dorilar")
+                    : (i18n.language === "uz_cyrl" ? "Сиз танлаган дорилар" : "Siz tanlagan dorilar")}</h2>
+                  {section.map((i) => (
+                <Card key={cartEntryKey(i)} className="p-3 flex flex-wrap sm:flex-nowrap items-center gap-3">
                   <div className="w-16 h-16 rounded-md bg-muted overflow-hidden shrink-0">
                     {i.image_url && <img src={i.image_url} alt={i.name} className="w-full h-full object-cover" />}
                   </div>
@@ -141,13 +149,14 @@ function CartPage() {
                     <p className="text-sm font-semibold text-primary">= {(i.price * i.quantity).toLocaleString()} {t("common.sum")}</p>
                   </div>
                   <div className="flex items-center gap-1">
-                    <Button size="icon" variant="outline" onClick={() => remove(i.id)}><Minus className="h-4 w-4" /></Button>
+                    <Button size="icon" variant="outline" aria-label={`${i.name} kamaytirish`} onClick={() => remove(cartEntryKey(i))}><Minus className="h-4 w-4" /></Button>
                     <span className="w-8 text-center font-semibold">{i.quantity}</span>
-                    <Button size="icon" onClick={() => add({ id: i.id, name: i.name, price: i.price, unit: i.unit, image_url: i.image_url })}><Plus className="h-4 w-4" /></Button>
-                    <Button size="icon" variant="ghost" onClick={() => setQty(i.id, 0)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                    <Button size="icon" aria-label={`${i.name} ko‘paytirish`} onClick={() => add(i)}><Plus className="h-4 w-4" /></Button>
+                    <Button size="icon" variant="ghost" aria-label={`${i.name} o‘chirish`} onClick={() => setQty(cartEntryKey(i), 0)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                   </div>
                 </Card>
-              ))}
+              ))}</section>;
+              })}
 
               <Card className="p-4 mt-4 space-y-3">
                 <div className="flex justify-between text-sm">
@@ -221,7 +230,7 @@ function CartPage() {
                 <Label>{t("cart.order_list")}</Label>
                 <ul className="text-sm space-y-1">
                   {items.map((i) => (
-                    <li key={i.id} className="flex justify-between gap-2">
+                    <li key={cartEntryKey(i)} className="flex justify-between gap-2">
                       <span className="truncate">{i.name} × {i.quantity}</span>
                       <span className="font-medium shrink-0">{(i.price * i.quantity).toLocaleString()} {t("common.sum")}</span>
                     </li>
