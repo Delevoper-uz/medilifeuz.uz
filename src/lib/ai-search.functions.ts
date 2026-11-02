@@ -281,7 +281,14 @@ export const analyzeMedicineImage = createServerFn({ method: "POST" })
         message: "Retsept operatorga yuborildi. Javob kutilmoqda.",
       };
     }
-    return buildResult(names, await lookupGroups(names));
+    const result = buildResult(names, await lookupGroups(names));
+    if (result.missing.length || result.groups.some(group => !group.exact)) {
+      const { createOperatorRequest } = await import("./operator.server");
+      result.operatorRequest = await createOperatorRequest(data.imageDataUrl, `Aniqlashtirish kerak: ${result.missing.join(", ") || names.join(", ")}`);
+      result.sentToTelegram = true;
+      result.message = "Retseptni aniqlashtirish uchun operatorga yuborildi. Javob kutilmoqda.";
+    }
+    return result;
   });
 
 /** Foydalanuvchi o'zi so'ragandagina rasmni operatorlar guruhiga yuboradi. */

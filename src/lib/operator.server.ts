@@ -75,6 +75,7 @@ export async function handleOperatorUpdate(update: any, token: string): Promise<
       return true;
     }
     if (match) {
+      if (match[1] === "send" && row.step !== "preview") throw new Error("Avval Shular holos tugmasi bilan retseptni tekshiring");
       row = await action(match[1]);
       await telegram(token, "answerCallbackQuery", { callback_query_id: cb.id, text: match[1] === "send" ? "Ro‘yxat mijozga yuborildi" : "Qabul qilindi" });
     } else {
@@ -84,8 +85,10 @@ export async function handleOperatorUpdate(update: any, token: string): Promise<
         if (!/^\d{1,3}$/.test(text)) throw new Error("Dori raqamini yuboring");
         row = await action(row.step === "remove" ? "delete" : "pick", Number(text));
       } else if (row.step === "search") {
-        const { lookupMedicines, extractCandidateNames } = await import("./ai-search.functions");
-        const { found } = await lookupMedicines(extractCandidateNames(text));
+        const { extractCandidateNames } = await import("./ai-search.functions");
+        const { lookupGroups } = await import("./ai-search.functions");
+        const groups = await lookupGroups(extractCandidateNames(text));
+        const found = groups.flatMap(group => group.candidates);
         if (!found.length) throw new Error("Dori topilmadi; nomini qayta yuboring");
         row = await action("candidates", found.slice(0, 40));
       } else return true;
