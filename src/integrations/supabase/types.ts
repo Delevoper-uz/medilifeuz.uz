@@ -250,6 +250,57 @@ export type Database = {
         }
         Relationships: []
       }
+      operator_requests: {
+        Row: {
+          candidates: Json
+          chat_id: number
+          created_at: string
+          delivered_at: string | null
+          id: string
+          last_update_id: number | null
+          message_id: number | null
+          operator_id: number | null
+          prompt_id: number | null
+          removed: Json
+          secret_hash: string
+          selected: Json
+          status: string
+          step: string
+        }
+        Insert: {
+          candidates?: Json
+          chat_id: number
+          created_at?: string
+          delivered_at?: string | null
+          id?: string
+          last_update_id?: number | null
+          message_id?: number | null
+          operator_id?: number | null
+          prompt_id?: number | null
+          removed?: Json
+          secret_hash: string
+          selected?: Json
+          status?: string
+          step?: string
+        }
+        Update: {
+          candidates?: Json
+          chat_id?: number
+          created_at?: string
+          delivered_at?: string | null
+          id?: string
+          last_update_id?: number | null
+          message_id?: number | null
+          operator_id?: number | null
+          prompt_id?: number | null
+          removed?: Json
+          secret_hash?: string
+          selected?: Json
+          status?: string
+          step?: string
+        }
+        Relationships: []
+      }
       order_items: {
         Row: {
           id: string
@@ -569,6 +620,16 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      operator_request_action: {
+        Args: {
+          p_action: string
+          p_id: string
+          p_operator: number
+          p_update?: number
+          p_value?: Json
+        }
+        Returns: Json
       }
     }
     Enums: {
