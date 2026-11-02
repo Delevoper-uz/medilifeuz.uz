@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { nearestBranch } from "@/lib/branches";
 
 const OrderItemSchema = z.object({
   medicine_id: z.string().uuid(),
@@ -13,6 +14,8 @@ const PlaceOrderSchema = z.object({
   customer_phone: z.string().trim().min(7).max(20),
   address: z.string().trim().min(1).max(600),
   map_url: z.string().url().max(500).optional().nullable(),
+  lat: z.number().min(-90).max(90).optional().nullable(),
+  lng: z.number().min(-180).max(180).optional().nullable(),
   note: z.string().max(500).optional().nullable(),
   items: z.array(OrderItemSchema).min(1).max(50),
 });
@@ -74,9 +77,12 @@ export const placeOrder = createServerFn({ method: "POST" })
     if (ierr) throw new Error(ierr.message);
 
 
+    // 4) nearest branch
+    const near = data.lat != null && data.lng != null ? nearestBranch(data.lat, data.lng) : null;
+
     // 5) Telegram notify
     const token = process.env.TELEGRAM_BOT_TOKEN;
-    const chatId = process.env.TELEGRAM_CHAT_ID;
+    const chatId = near?.branch.telegram_chat_id || process.env.TELEGRAM_CHAT_ID;
     if (token && chatId) {
       const lines = [
         "🆕 <b>Yangi buyurtma — MediLife</b>",
@@ -85,6 +91,7 @@ export const placeOrder = createServerFn({ method: "POST" })
         `🚚 Yetkazib berish (shahar bo'ylab bepul)`,
         `📍 ${data.address}`,
       ];
+      if (near) lines.push(`🏥 Eng yaqin filial: <b>${near.branch.name}</b> (${near.km.toFixed(1)} km)`);
       lines.push(`💳 To'lov turi: Naqd (kuryerga yetkazilganda)`);
       if (data.map_url) lines.push(`🗺 <a href="${data.map_url}">Xaritada ko'rish</a>`);
       lines.push(
