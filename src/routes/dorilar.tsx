@@ -8,6 +8,8 @@ import { MedicineCard, type Medicine } from "@/components/MedicineCard";
 import { AiListSearch } from "@/components/AiListSearch";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { SEARCH_PAGE_SIZE } from "@/lib/operator-model";
 
 
 export const Route = createFileRoute("/dorilar")({
@@ -22,7 +24,7 @@ export const Route = createFileRoute("/dorilar")({
   ] }),
 });
 
-const PAGE_SIZE = 200;
+const PAGE_SIZE = SEARCH_PAGE_SIZE;
 
 /** So'rovni PostgREST ilike patterniga aylantiradi (maxsus belgilarni tozalaydi). */
 function tokens(q: string): string[] {
@@ -41,6 +43,7 @@ function MedicinesPage() {
   const [minPrice, setMinPrice] = useState<string>("");
   const [maxPrice, setMaxPrice] = useState<string>("");
   const [sort, setSort] = useState<"az" | "za" | "price-asc" | "price-desc" | "random">("random");
+  const [page, setPage] = useState(0);
 
   useEffect(() => {
     const id = setTimeout(() => setDq(q.trim()), 250);
@@ -48,9 +51,10 @@ function MedicinesPage() {
   }, [q]);
 
   const currentLang: "latin" | "cyrillic" = i18n.language === "uz_cyrl" ? "cyrillic" : "latin";
+  useEffect(() => setPage(0), [dq, minPrice, maxPrice, sort, currentLang]);
 
-  const { data: filtered = [], isLoading, isFetching, isError, refetch } = useQuery({
-    queryKey: ["medicines-search", currentLang, dq, minPrice, maxPrice, sort],
+  const { data: result, isLoading, isFetching, isError, refetch } = useQuery({
+    queryKey: ["medicines-search", currentLang, dq, minPrice, maxPrice, sort, page],
     placeholderData: keepPreviousData,
     staleTime: sort === "random" ? 0 : 2 * 60 * 1000,
     retry: 3,
@@ -60,7 +64,7 @@ function MedicinesPage() {
       const max = Number(maxPrice) || 0;
 
       const run = async (withLang: boolean) => {
-        let query = supabase.from("medicines").select("*");
+        let query = supabase.from("medicines").select("*", { count: "exact" });
         if (withLang) query = query.eq("language", currentLang);
         for (const tok of tokens(dq)) {
           query = query.or(`name.ilike.%${tok}%,name_cyrl.ilike.%${tok}%`);
@@ -69,10 +73,11 @@ function MedicinesPage() {
         if (max > 0) query = query.lte("price", max);
         if (sort === "price-asc") query = query.order("price", { ascending: true });
         else if (sort === "price-desc") query = query.order("price", { ascending: false });
-        else if (sort === "random") query = query.order("id", { ascending: Math.random() < 0.5 });
+        else if (sort === "random") query = query.order("id", { ascending: dq ? true : Math.random() < 0.5 });
         else query = query.order(currentLang === "cyrillic" ? "name_cyrl" : "name", { ascending: sort === "az" });
-        let offset = 0;
-        if (sort === "random") {
+        query = query.order("id", { ascending: true });
+        let offset = page * PAGE_SIZE;
+        if (sort === "random" && !dq) {
           let cq = supabase.from("medicines").select("id", { count: "exact", head: true });
           if (withLang) cq = cq.eq("language", currentLang);
           for (const tok of tokens(dq)) cq = cq.or(`name.ilike.%${tok}%,name_cyrl.ilike.%${tok}%`);
@@ -82,13 +87,14 @@ function MedicinesPage() {
           const total = count ?? 0;
           if (total > PAGE_SIZE) offset = Math.floor(Math.random() * (total - PAGE_SIZE));
         }
-        const { data, error } = await query.range(offset, offset + PAGE_SIZE - 1);
+        const { data, error, count } = await query.range(offset, offset + PAGE_SIZE - 1);
         if (error) throw new Error(error.message);
-        return (data ?? []) as Medicine[];
+        return { rows: (data ?? []) as Medicine[], total: count ?? 0 };
       };
 
       const primary = await run(true);
-      const rows = primary.length ? primary : await run(false);
+      const resolved = primary.total ? primary : await run(false);
+      const rows = resolved.rows;
 
       // Bir xil dorilarni (nomi + narxi bir xil) faqat bir marta ko'rsatamiz
       const seen = new Set<string>();
@@ -106,9 +112,11 @@ function MedicinesPage() {
           [unique[i], unique[j]] = [unique[j] as Medicine, unique[i] as Medicine];
         }
       }
-      return unique;
+      return { rows: unique, total: resolved.total };
     },
   });
+  const filtered = result?.rows ?? [];
+  const total = result?.total ?? 0;
 
 
 
@@ -153,9 +161,14 @@ function MedicinesPage() {
       ) : (
         <>
           <div className="text-xs text-muted-foreground mb-3">
-            Topildi: {filtered.length} ta{filtered.length >= PAGE_SIZE ? "+ (aniqroq qidiring)" : ""}
+            Topildi: {total.toLocaleString("uz-UZ")} ta
             {isFetching ? " · yuklanmoqda…" : ""}
           </div>
+          {(sort !== "random" || dq) && total > PAGE_SIZE && <div className="flex items-center justify-center gap-3 mt-6">
+            <Button variant="outline" disabled={page === 0 || isFetching} onClick={() => setPage(p => p - 1)}>{i18n.language === "uz_cyrl" ? "Олдинги" : "Oldingi"}</Button>
+            <span>{page + 1}</span>
+            <Button variant="outline" disabled={(page + 1) * PAGE_SIZE >= total || isFetching} onClick={() => setPage(p => p + 1)}>{i18n.language === "uz_cyrl" ? "Кейинги" : "Keyingi"}</Button>
+          </div>}
 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
             {filtered.map((m, i) => (

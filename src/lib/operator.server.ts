@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import type { OperatorMedicine } from "./operator-model";
+import type { Database } from "@/integrations/supabase/types";
 
 export const hashCapability = (secret: string) => createHash("sha256").update(secret).digest("hex");
 async function telegram(token: string, method: string, body: Record<string, unknown> | FormData) {
@@ -50,7 +51,7 @@ export async function handleOperatorUpdate(update: any, token: string): Promise<
   const message = update.message;
   if (!match && !message?.reply_to_message?.message_id) return false;
   const { supabaseAdmin: db } = await import("@/integrations/supabase/client.server");
-  let row;
+  let row: Database["public"]["Tables"]["operator_requests"]["Row"] | null;
   if (match) {
     const result = await db.from("operator_requests").select("*").eq("id", match[2]).maybeSingle();
     row = result.data;
@@ -59,13 +60,14 @@ export async function handleOperatorUpdate(update: any, token: string): Promise<
     row = result.data;
   }
   if (!row) return !!match;
+  const requestId = row.id;
   const chatId = cb?.message?.chat?.id ?? message?.chat?.id;
   const operatorId = cb?.from?.id ?? message?.from?.id;
   if (String(chatId) !== String(row.chat_id) || String(row.chat_id) !== String(process.env.TELEGRAM_CHAT_ID) || !Number.isSafeInteger(operatorId)) return true;
   const action = async (name: string, value: any = null) => {
-    const { data, error } = await db.rpc("operator_request_action", { p_id: row.id, p_operator: operatorId, p_action: name, p_value: value, p_update: update.update_id });
+    const { data, error } = await db.rpc("operator_request_action", { p_id: requestId, p_operator: operatorId, p_action: name, p_value: value, p_update: update.update_id });
     if (error) throw new Error(error.message.includes("claimed") ? "Bu retseptni boshqa operator qabul qilgan" : "Amal bajarilmadi; raqamni tekshiring");
-    return data as unknown as typeof row;
+    return data as unknown as Database["public"]["Tables"]["operator_requests"]["Row"];
   };
   try {
     if (row.status === "sent") {

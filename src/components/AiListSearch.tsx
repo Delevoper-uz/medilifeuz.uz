@@ -7,7 +7,6 @@ import { MedicineCard, type Medicine } from "@/components/MedicineCard";
 import { useOperatorDelivery } from "@/components/OperatorDelivery";
 import {
   analyzeMedicineImage,
-  getBotSharedList,
   sendPrescriptionToOperators,
   type AiGroup,
   type AiSearchResult,
@@ -111,9 +110,7 @@ function GroupPicker({ index, group: rawGroup }: { index: number; group: AiGroup
 export function AiListSearch() {
   const { track } = useOperatorDelivery();
   const analyze = useServerFn(analyzeMedicineImage);
-  const fromBot = useServerFn(getBotSharedList);
   const toOperators = useServerFn(sendPrescriptionToOperators);
-  const [botLoading, setBotLoading] = useState(false);
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
