@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { useCart } from "@/hooks/use-cart";
-import { useOfflineMode } from './OfflineMode';
 
 export type Medicine = {
   id: string;
@@ -22,8 +21,7 @@ export function MedicineCard({ m }: { m: Medicine }) {
   const { t, i18n } = useTranslation();
   const { items, add, remove } = useCart();
   const navigate = useNavigate();
-  const { offline, image } = useOfflineMode();
-  const imageUrl = offline ? image : m.image_url;
+  const imageUrl = m.image_url;
   const inCart = items.find((x) => x.id === m.id && x.source !== "operator");
   const qty = inCart?.quantity ?? 0;
   const displayName = i18n.language === "uz_cyrl" && m.name_cyrl ? m.name_cyrl : m.name;
@@ -53,7 +51,7 @@ export function MedicineCard({ m }: { m: Medicine }) {
             key={imageUrl}
             src={imageUrl}
             alt={displayName}
-            loading={offline ? 'eager' : 'lazy'}
+            loading="lazy"
             referrerPolicy="no-referrer"
             className="mx-auto max-h-full max-w-full object-contain group-hover:scale-105 transition-transform"
             onError={(e) => {
@@ -77,7 +75,7 @@ export function MedicineCard({ m }: { m: Medicine }) {
         <div className="text-lg font-bold text-primary">
           {Number(m.price).toLocaleString()} {t("common.sum")}
         </div>
-        {!offline && <div className="mt-auto">
+        <div className="mt-auto">
           {qty === 0 ? (
             <Button onClick={onAdd} className="w-full gap-1" size="sm">
               <Plus className="h-4 w-4" /> {t("common.add")}
@@ -89,7 +87,7 @@ export function MedicineCard({ m }: { m: Medicine }) {
               <Button onClick={onAdd} size="icon"><Plus className="h-4 w-4" /></Button>
             </div>
           )}
-        </div>}
+        </div>
       </div>
     </Card>
   );
