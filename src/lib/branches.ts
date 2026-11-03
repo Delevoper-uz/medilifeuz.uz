@@ -1,14 +1,38 @@
-// Filiallar koordinatalari (taxminiy, Namangan). Haqiqiy koordinatalar bilan almashtiring.
-// telegram_chat_id null bo'lsa buyurtma asosiy guruhga boradi.
-export type Branch = { id: number; name: string; latitude: number; longitude: number; telegram_chat_id: string | null };
+// Only persisted, configured locations participate in order routing.
+export type Branch = { id: string; name: string; latitude: number; longitude: number; telegram_chat_id: string | null };
 
-export const BRANCHES: Branch[] = [
-  { id: 1, name: "1-Filial", latitude: 40.9983, longitude: 71.6726, telegram_chat_id: null },
-  { id: 2, name: "2-Filial", latitude: 41.0105, longitude: 71.6431, telegram_chat_id: null },
-  { id: 3, name: "3-Filial", latitude: 40.9852, longitude: 71.6012, telegram_chat_id: null },
-  { id: 4, name: "4-Filial", latitude: 41.0021, longitude: 71.7105, telegram_chat_id: null },
-  { id: 5, name: "5-Filial", latitude: 40.9718, longitude: 71.6550, telegram_chat_id: null },
-];
+export const BRANCHES: Branch[] = [];
+
+export function branchOrderCallback(branchId: string, orderId: string) {
+  const hex = branchId.replace(/-/g, '');
+  const bytes = hex.match(/.{2}/g) ?? [];
+  const compact = btoa(String.fromCharCode(...bytes.map(b => parseInt(b, 16)))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  return `b:${compact}:${orderId.replace(/-/g, '')}`;
+}
+
+export function isValidCoordinates(lat: number, lng: number) {
+  return Number.isFinite(lat) && Number.isFinite(lng) && Math.abs(lat) <= 90 && Math.abs(lng) <= 180;
+}
+
+export function isYandexMapUrl(value: string) {
+  try {
+    const u = new URL(value);
+    return u.protocol === 'https:' && !u.username && !u.password && !u.port &&
+      /^(?:www\.)?yandex\.(?:ru|uz|com)$/.test(u.hostname) && /^\/maps(?:\/|$)/.test(u.pathname);
+  } catch { return false; }
+}
+
+export function coordinatesFromYandexUrl(value: string): [number, number] | null {
+  if (!isYandexMapUrl(value)) return null;
+  const params = new URL(value).searchParams;
+  // A pin takes priority over the viewport center.
+  const point = params.get('pt') ?? params.get('whatshere[point]') ?? params.get('ll');
+  if (!point) return null;
+  const pair = point.split('~')[0].split(',');
+  if (pair.length < 2 || !pair[0].trim() || !pair[1].trim()) return null;
+  const lng = Number(pair[0]), lat = Number(pair[1]);
+  return isValidCoordinates(lat, lng) ? [lat, lng] : null;
+}
 
 export function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const R = 6371;
@@ -20,11 +44,13 @@ export function haversineKm(lat1: number, lon1: number, lat2: number, lon2: numb
 }
 
 export function nearestBranch(lat: number, lon: number, branches: Branch[] = BRANCHES) {
-  let best = branches[0];
+  if (!isValidCoordinates(lat, lon)) return null;
+  let best: Branch | undefined;
   let bestKm = Infinity;
   for (const b of branches) {
+    if (!isValidCoordinates(b.latitude, b.longitude)) continue;
     const km = haversineKm(lat, lon, b.latitude, b.longitude);
     if (km < bestKm) { best = b; bestKm = km; }
   }
-  return { branch: best, km: bestKm };
+  return best ? { branch: best, km: bestKm } : null;
 }

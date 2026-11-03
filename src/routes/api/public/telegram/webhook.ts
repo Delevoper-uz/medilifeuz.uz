@@ -51,23 +51,40 @@ export const Route = createFileRoute("/api/public/telegram/webhook")({
             }).catch(() => undefined);
 
           const m = /^take:(\d{1,2}):([0-9a-f-]{36})$/.exec(dataStr);
-          if (m) {
-            const branch = `${m[1]}-Filial`;
-            const orderId = m[2] as string;
+          const configured = /^b:([A-Za-z0-9_-]{22}):([0-9a-f]{32})$/.exec(dataStr);
+          if (m || configured) {
+            const uuid = (s: string) => `${s.slice(0,8)}-${s.slice(8,12)}-${s.slice(12,16)}-${s.slice(16,20)}-${s.slice(20)}`;
+            const orderId = configured ? uuid(configured[2]) : m?.[2];
+            if (!orderId) return Response.json({ ok: true });
             const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-            const { data: existing } = await supabaseAdmin
+            let branch = `${m?.[1]}-Filial`;
+            const branchId = configured ? uuid(Buffer.from(configured[1], 'base64url').toString('hex')) : null;
+            const { data: existing, error: readError } = await supabaseAdmin
               .from("orders")
-              .select("id, branch, status")
+              .select("id, branch, status, routed_branch_id")
               .eq("id", orderId)
               .maybeSingle();
+            if (readError || !existing) { await answer('Buyurtma topilmadi'); return Response.json({ ok: true }); }
+            if (existing.routed_branch_id && existing.routed_branch_id !== branchId) {
+              await answer('Buyurtma boshqa filialga yo‘naltirilgan'); return Response.json({ ok: true });
+            }
+            if (branchId) {
+              const { data: location } = await supabaseAdmin.from('branch_locations').select('telegram_chat_id, branches!inner(name)').eq('branch_id', branchId).maybeSingle();
+              const allowedChat = location?.telegram_chat_id || process.env['TELEGRAM_CHAT_ID'];
+              if (!location || String(cb.message?.chat?.id) !== String(allowedChat)) {
+                await answer('Filialga ruxsat yo‘q'); return Response.json({ ok: true });
+              }
+              branch = location.branches.name;
+            }
             if (existing?.branch) {
               await answer(`Bu buyurtma allaqachon ${existing.branch} tomonidan qabul qilingan.`);
               return Response.json({ ok: true });
             }
-            await supabaseAdmin
+            const { data: accepted, error: acceptError } = await supabaseAdmin
               .from("orders")
-              .update({ status: "processing", branch })
-              .eq("id", orderId);
+              .update({ status: "confirmed", branch })
+              .eq("id", orderId).is('branch', null).select('id').maybeSingle();
+            if (acceptError || !accepted) { await answer('Buyurtma qabul qilingan yoki qayta urinib ko‘ring'); return Response.json({ ok: true }); }
             const acceptedLine = `✅ ${branch} buyurtmani qabul qildi`;
             const isCaption = typeof cb.message?.caption === "string" || !cb.message?.text;
             const tgPost = (method: string, body: unknown) =>

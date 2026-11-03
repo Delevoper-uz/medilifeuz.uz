@@ -44,17 +44,21 @@ export function YandexAddressPicker({ onPick }: { onPick: (address: string, mapU
   const mapInstance = useRef<any>(null);
   const placemark = useRef<any>(null);
   const ymapsRef = useRef<any>(null);
+  const markerRequest = useRef(0);
 
   const setMarker = async (coords: number[]) => {
     const ymaps = ymapsRef.current;
-    if (!ymaps || !mapInstance.current) return;
+    const map = mapInstance.current;
+    const request = ++markerRequest.current;
+    if (!ymaps || !map) return;
     let addr = `${coords[0].toFixed(5)}, ${coords[1].toFixed(5)}`;
     try {
       const res = await ymaps.geocode(coords);
-      const first = res.geoObjects.get(0);
+      const first = res?.geoObjects?.get(0);
       const got = first?.getAddressLine?.();
       if (got) addr = got;
     } catch {}
+    if (mapInstance.current !== map || request !== markerRequest.current) return;
     setPicked(addr);
     setCoords(coords);
     if (!placemark.current) {
@@ -64,15 +68,15 @@ export function YandexAddressPicker({ onPick }: { onPick: (address: string, mapU
         { preset: "islands#redDotIconWithCaption", draggable: true }
       );
       placemark.current.events.add("dragend", () => {
-        const c = placemark.current.geometry.getCoordinates();
-        setMarker(c);
+        const c = placemark.current?.geometry.getCoordinates();
+        if (c) void setMarker(c);
       });
-      mapInstance.current.geoObjects.add(placemark.current);
+      map.geoObjects.add(placemark.current);
     } else {
       placemark.current.geometry.setCoordinates(coords);
       placemark.current.properties.set("iconCaption", addr);
     }
-    mapInstance.current.setCenter(coords, 16);
+    map.setCenter(coords, 16);
   };
 
   const useMyLocation = () => {
@@ -106,6 +110,7 @@ export function YandexAddressPicker({ onPick }: { onPick: (address: string, mapU
 
     return () => {
       cancelled = true;
+      markerRequest.current++;
       try {
         mapInstance.current?.destroy?.();
       } catch {}
