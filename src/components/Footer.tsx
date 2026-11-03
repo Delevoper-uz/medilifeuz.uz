@@ -1,6 +1,6 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
-import { Phone, Instagram, Send } from "lucide-react";
+import { Phone } from "lucide-react";
 import logo from "@/assets/medilife-logo.jpg";
 import { Button } from '@/components/ui/button';
 import { useOfflineMode } from '@/components/OfflineMode';
@@ -35,8 +35,6 @@ export function Footer() {
             ) : (
               <li className="flex items-center gap-2"><Phone className="h-4 w-4 text-primary" /> <a href="tel:+998957461111" className="hover:underline">+998 95 746 11 11</a></li>
             )}
-            <li className="flex items-center gap-2 py-2"><Instagram className="h-5 w-5 shrink-0 text-primary" /> <a className="break-all hover:underline" href="https://www.instagram.com/medilife.dorixona/" target="_blank" rel="noopener noreferrer">Instagram — medilife.dorixona</a></li>
-            <li className="flex items-center gap-2 py-2"><Send className="h-5 w-5 shrink-0 text-primary" /> <a className="break-all hover:underline" href="https://t.me/Medillife" target="_blank" rel="noopener noreferrer">Telegram — Medillife</a></li>
           </ul>
         </div>
         <div>
