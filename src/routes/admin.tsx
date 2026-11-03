@@ -21,18 +21,14 @@ import {
   adminDeleteMedicine,
   adminDeleteNews,
   adminDeleteOrder,
-  adminDeleteUser,
   adminListBranches,
   adminListMedicines,
   adminListNews,
   adminListOrders,
-  adminListUsers,
-  adminResetPassword,
   adminSaveBranch,
   adminSaveMedicine,
   adminSaveNews,
   adminSetOrderStatus,
-  adminUpdateUser,
   adminUploadMedia,
 } from "@/lib/admin.functions";
 import { BranchCoordinatesAdmin } from '@/components/BranchCoordinatesAdmin';
@@ -585,170 +581,3 @@ function OrdersAdmin() {
 }
 
 
-/* ---------------- LIVE ACTIVITY ---------------- */
-function ActivityAdmin() {
-  const listFn = useServerFn(adminListPresence);
-  const { data = [], isLoading } = useQuery({
-    queryKey: ["admin-presence"],
-    queryFn: () => listFn({ data: {} }),
-    refetchInterval: 15_000,
-  });
-
-  if (isLoading) return <p className="text-muted-foreground">Yuklanmoqda...</p>;
-  if (data.length === 0) return <p className="text-muted-foreground">Hozircha faoliyat yo'q</p>;
-
-  return (
-    <div className="space-y-2">
-      {data.map((r: any) => {
-        const last = new Date(r.last_seen_at);
-        const active = Date.now() - last.getTime() < 5 * 60 * 1000;
-        return (
-          <Card key={r.user_id} className="p-4 flex items-center justify-between gap-3">
-            <div className="min-w-0">
-              <p className="font-medium truncate">{r.full_name || "Ismi yo'q"}</p>
-              <p className="text-xs text-muted-foreground">{r.phone_number || "Telefon yo'q"}</p>
-              <p className="text-sm mt-1 truncate">{r.activity || r.path}</p>
-            </div>
-            <div className="text-right shrink-0">
-              <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${active ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}>
-                <span className={`h-2 w-2 rounded-full ${active ? "bg-primary" : "bg-muted-foreground"}`} />
-                {active ? "Aktiv" : "Noaktiv"}
-              </span>
-              <p className="text-xs text-muted-foreground mt-1">{last.toLocaleString()}</p>
-            </div>
-          </Card>
-        );
-      })}
-    </div>
-  );
-}
-
-/* ---------------- USERS ---------------- */
-function UsersAdmin() {
-  const listFn = useServerFn(adminListUsers);
-  const resetFn = useServerFn(adminResetPassword);
-  const updateFn = useServerFn(adminUpdateUser);
-  const deleteFn = useServerFn(adminDeleteUser);
-
-  const { data, refetch, isLoading } = useQuery({
-    queryKey: ["admin-users"],
-    queryFn: () => listFn({ data: {} }),
-  });
-
-  const [editing, setEditing] = useState<any | null>(null);
-  const [editOpen, setEditOpen] = useState(false);
-  const [pwdUser, setPwdUser] = useState<any | null>(null);
-  const [newPwd, setNewPwd] = useState("");
-
-  const saveEdit = async () => {
-    if (!editing) return;
-    try {
-      await updateFn({ data: { user_id: editing.id, full_name: editing.full_name, phone: editing.phone, email: editing.email } });
-      toast.success("Saqlandi"); setEditOpen(false); refetch();
-    } catch (e: any) { toast.error(e.message); }
-  };
-
-  const savePwd = async () => {
-    if (!pwdUser || newPwd.length < 6) return toast.error("Parol kamida 6 ta belgi");
-    try {
-      await resetFn({ data: { user_id: pwdUser.id, new_password: newPwd } });
-      toast.success(`Yangi parol o'rnatildi: ${newPwd}`);
-      setPwdUser(null); setNewPwd("");
-    } catch (e: any) { toast.error(e.message); }
-  };
-
-  const delUser = async (id: string) => {
-    if (!confirm("Foydalanuvchini butunlay o'chirasizmi?")) return;
-    try {
-      await deleteFn({ data: { user_id: id } });
-      toast.success("O'chirildi"); refetch();
-    } catch (e: any) { toast.error(e.message); }
-  };
-
-  if (isLoading) return <p className="text-muted-foreground">Yuklanmoqda...</p>;
-
-  return (
-    <div className="space-y-3">
-      <p className="text-sm text-muted-foreground">Jami: {data?.users.length ?? 0} foydalanuvchi. Parolni unutgan foydalanuvchiga yangi parol o'rnatishingiz mumkin.</p>
-      <div className="grid md:grid-cols-2 gap-3">
-        {data?.users.map((u) => (
-          <Card key={u.id} className="p-4 space-y-2">
-            <div>
-              <p className="font-medium">{u.full_name || "(Ism kiritilmagan)"}</p>
-              <p className="text-xs text-muted-foreground break-all">📧 {u.email}</p>
-              {u.phone && <p className="text-xs text-muted-foreground">📞 {u.phone}</p>}
-              <p className="text-xs text-muted-foreground mt-1">Ro'yxatdan: {new Date(u.created_at).toLocaleDateString()}</p>
-            </div>
-            <div className="flex gap-2 pt-2">
-              <Button size="sm" variant="outline" className="gap-1" onClick={() => { setEditing({ ...u }); setEditOpen(true); }}>
-                <Pencil className="h-3.5 w-3.5" /> Tahrirlash
-              </Button>
-              <Button size="sm" variant="outline" className="gap-1" onClick={() => { setPwdUser(u); setNewPwd(""); }}>
-                <KeyRound className="h-3.5 w-3.5" /> Parol
-              </Button>
-              <Button size="sm" variant="ghost" onClick={() => delUser(u.id)}><Trash2 className="h-3.5 w-3.5 text-destructive" /></Button>
-            </div>
-          </Card>
-        ))}
-      </div>
-
-      <Dialog open={editOpen} onOpenChange={setEditOpen}>
-        <DialogContent>
-          <DialogHeader><DialogTitle>Foydalanuvchini tahrirlash</DialogTitle></DialogHeader>
-          {editing && <div className="space-y-3">
-            <div><Label>Ism</Label><Input value={editing.full_name ?? ""} onChange={(e) => setEditing({ ...editing, full_name: e.target.value })} /></div>
-            <div><Label>Email</Label><Input type="email" value={editing.email ?? ""} onChange={(e) => setEditing({ ...editing, email: e.target.value })} /></div>
-            <div><Label>Telefon</Label><Input value={editing.phone ?? ""} onChange={(e) => setEditing({ ...editing, phone: e.target.value })} /></div>
-            <Button onClick={saveEdit} className="w-full">Saqlash</Button>
-          </div>}
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={!!pwdUser} onOpenChange={(v) => { if (!v) { setPwdUser(null); setNewPwd(""); } }}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader><DialogTitle>Yangi parol o'rnatish</DialogTitle></DialogHeader>
-          {pwdUser && <div className="space-y-3">
-            <p className="text-sm text-muted-foreground">Foydalanuvchi: <b>{pwdUser.email}</b></p>
-            <Input type="text" placeholder="Yangi parol (kamida 6 ta belgi)" value={newPwd} onChange={(e) => setNewPwd(e.target.value)} />
-            <Button onClick={savePwd} className="w-full">O'rnatish</Button>
-            <p className="text-xs text-muted-foreground">⚠️ Eski parol qaytarib bo'lmaydi — tizim parollarni shifrlangan saqlaydi. Faqat yangi parol o'rnatish mumkin.</p>
-          </div>}
-        </DialogContent>
-      </Dialog>
-    </div>
-  );
-}
-
-/** Narx boti qanday ishlashi haqida qo'llanma. */
-function PriceBotAdmin() {
-  const steps = [
-    "Botga /start yuboring — bot tilni so'raydi: Uz (lotin) yoki Kirill.",
-    "Tanlagach, dorilar ro'yxatini yuboring (har bir dori yangi qatordan).",
-    "Bot butun bazani tekshirib, har bir dori uchun \"BOR\" yoki \"YOQ\" deb javob beradi.",
-    "Biror dorini almashtirish uchun uning raqamini yuboring (masalan: 2) — bot yangi nom so'raydi.",
-    "\"Narxlarni yuborish\" tugmasini bosib, narxlarni tartib bilan yuboring: 1. 12000  2. 20000  3. 3000",
-    "\"BO'LDI O'ZGARTIRISH\" tugmasi bosilganda narxlar bazada darhol yangilanadi.",
-  ];
-  return (
-    <div className="space-y-4">
-      <div className="rounded-lg border bg-card p-4 reveal-up">
-        <h3 className="font-semibold mb-2">Narx boti ishga tushirilgan</h3>
-        <p className="text-sm text-muted-foreground">
-          Yangi bot ulangan. Narxlarni to'g'ridan-to'g'ri Telegram orqali o'zgartirish tartibi:
-        </p>
-        <ol className="mt-3 space-y-2 list-decimal pl-5 text-sm">
-          {steps.map((t) => (
-            <li key={t}>{t}</li>
-          ))}
-        </ol>
-      </div>
-      <div className="rounded-lg border bg-card p-4 reveal-up">
-        <h3 className="font-semibold mb-2">Asosiy botdagi ro'yxat</h3>
-        <p className="text-sm text-muted-foreground">
-          Guruhda dorilar ro'yxati yuborilganda bot "BO'LDI SHULAR" tugmasini ko'rsatadi. U bosilgach, ro'yxat saytga
-          o'tadi va Dorilar sahifasidagi "Botdan kelgan ro'yxat" tugmasi orqali barcha topilgan dorilar chiqadi.
-        </p>
-      </div>
-    </div>
-  );
-}
