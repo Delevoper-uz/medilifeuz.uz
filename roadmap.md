@@ -1,5 +1,7 @@
 # Requested work
 
+- [ ] Remove three admin menus and pictured footer social rows; add Maps Coordinate beside branches with persisted Yandex coordinates and route orders only to configured branches.
+
 - [x] Add controlled published-app offline support, cached medicines-only view, and best-effort refresh/gesture prevention; live browser disconnect check passed. Published cold-start check awaits a user-requested release.
 - [x] Enlarge the support phone action and show full Instagram/Telegram names; use the uploaded medicine image for offline entries; desktop/mobile inspected.
 - [x] Verify Telegram operator callbacks with disposable rows and mocked outbound Telegram, and confirm live webhook callbacks enabled, zero pending/error, unauthorized webhook denied; existing bot configuration unchanged.
