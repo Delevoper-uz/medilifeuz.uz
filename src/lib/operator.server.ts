@@ -26,7 +26,7 @@ export async function createOperatorRequest(image: string, note: string) {
     form.set("chat_id", chatId);
     form.set("caption", `📋 Mijoz retsepti #${id.slice(0, 8)}${note ? `\n${note}` : ""}`.slice(0, 1024));
     form.set("photo", new Blob([bytes], { type: /data:(.*?);/.exec(meta ?? "")?.[1] || "image/jpeg" }), "retsept.jpg");
-    form.set("reply_markup", JSON.stringify({ inline_keyboard: [[{ text: "Buyurtmani qabul qilish", callback_data: `op:claim:${id}` }]] }));
+    form.set("reply_markup", JSON.stringify({ inline_keyboard: [[{ text: "📥 Buyurtmani qabul qilish", callback_data: `op:claim:${id}` }]] }));
     const message = await telegram(token, "sendPhoto", form);
     const { error: updateError } = await db.from("operator_requests").update({ message_id: message?.message_id }).eq("id", id);
     if (updateError) throw new Error("So‘rov bog‘lanmadi");
@@ -39,10 +39,10 @@ export async function createOperatorRequest(image: string, note: string) {
 function keyboard(id: string, preview: boolean) {
   const button = (text: string, action: string) => ({ text, callback_data: `op:${action}:${id}` });
   return { inline_keyboard: [
-    [button("Dorilarni qo‘shish", "add"), button("Shular holos", "preview")],
-    [button("Yana dori qo‘shish", "add"), button("Dorini o‘chirish", "remove")],
-    [button("↶ Orqaga qaytarish", "undo")],
-    ...(preview ? [[button("Jo‘natish", "send")]] : []),
+    [button("💊 Dorilarni qo‘shish", "add"), button("✅ Shular holos", "preview")],
+    [button("➕ Yana dori qo‘shish", "add"), button("🗑️ Dorini o‘chirish", "remove")],
+    [button("↩️ Orqaga qaytarish", "undo")],
+    ...(preview ? [[button("📤 Jo‘natish", "send")]] : []),
   ] };
 }
 export async function handleOperatorUpdate(update: any, token: string): Promise<boolean> {

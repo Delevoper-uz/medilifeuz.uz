@@ -1,6 +1,6 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
-import { Phone } from "lucide-react";
+import { Phone, Instagram, Send } from "lucide-react";
 import logo from "@/assets/medilife-logo.jpg";
 
 export function Footer() {
@@ -27,8 +27,8 @@ export function Footer() {
           <h3 className="font-semibold mb-3">{t("footer.call_center")}</h3>
           <ul className="space-y-2 text-sm">
             <li className="flex items-center gap-2"><Phone className="h-4 w-4 text-primary" /> <a href="tel:+998957461111" className="hover:underline">+998 95 746 11 11</a></li>
-            <li><a href="https://www.instagram.com/medilife.dorixona/" target="_blank" rel="noopener noreferrer" className="hover:underline">Instagram</a></li>
-            <li><a href="https://t.me/Medillife" target="_blank" rel="noopener noreferrer" className="hover:underline">Telegram</a></li>
+            <li><a href="https://www.instagram.com/medilife.dorixona/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:underline"><Instagram aria-hidden="true" className="h-4 w-4 text-primary" />Instagram</a></li>
+            <li><a href="https://t.me/Medillife" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:underline"><Send aria-hidden="true" className="h-4 w-4 text-primary" />Telegram</a></li>
           </ul>
         </div>
         <div>

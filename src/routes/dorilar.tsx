@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { SEARCH_PAGE_SIZE } from "@/lib/operator-model";
+import { RandomMedicines } from "@/components/RandomMedicines";
 
 
 export const Route = createFileRoute("/dorilar")({
@@ -52,9 +53,11 @@ function MedicinesPage() {
 
   const currentLang: "latin" | "cyrillic" = i18n.language === "uz_cyrl" ? "cyrillic" : "latin";
   useEffect(() => setPage(0), [dq, minPrice, maxPrice, sort, currentLang]);
+  const randomBrowse = sort === 'random' && !dq && !minPrice && !maxPrice;
 
   const { data: result, isLoading, isFetching, isError, refetch } = useQuery({
     queryKey: ["medicines-search", currentLang, dq, minPrice, maxPrice, sort, page],
+    enabled: !randomBrowse,
     networkMode: 'always',
     placeholderData: keepPreviousData,
     staleTime: sort === "random" ? 0 : 2 * 60 * 1000,
@@ -157,7 +160,7 @@ function MedicinesPage() {
           </Select>
         </div>
       </div>
-      {isLoading ? (
+      {randomBrowse ? <RandomMedicines /> : isLoading ? (
         <AppLoading />
       ) : isError ? (
         <div className="text-muted-foreground">

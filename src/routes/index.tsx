@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { MedicineCard, type Medicine } from "@/components/MedicineCard";
+import { RandomMedicines } from "@/components/RandomMedicines";
 import { Button } from "@/components/ui/button";
 import { AiListSearch } from "@/components/AiListSearch";
 import logo from "@/assets/medilife-logo.jpg";
@@ -72,8 +72,7 @@ function NewsCarousel({ items }: { items: News[] }) {
 }
 
 function Home() {
-  const { t, i18n } = useTranslation();
-  const currentLang: "latin" | "cyrillic" = i18n.language === "uz_cyrl" ? "cyrillic" : "latin";
+  const { t } = useTranslation();
 
   const { data: news = [], isLoading: newsLoading } = useQuery({
     queryKey: ["news-home"],
@@ -83,31 +82,6 @@ function Home() {
     },
   });
 
-  const { data: medicines = [], isLoading: medsLoading } = useQuery({
-    queryKey: ["medicines-home", currentLang],
-    staleTime: 0,
-    queryFn: async () => {
-      const pick = async (withLang: boolean) => {
-        let cq = supabase.from("medicines").select("id", { count: "exact", head: true });
-        if (withLang) cq = cq.eq("language", currentLang);
-        const { count } = await cq;
-        const total = count ?? 0;
-        if (!total) return [] as Medicine[];
-        const offset = total > 40 ? Math.floor(Math.random() * (total - 40)) : 0;
-        let q = supabase.from("medicines").select("*").order("id", { ascending: Math.random() < 0.5 });
-        if (withLang) q = q.eq("language", currentLang);
-        const { data } = await q.range(offset, offset + 39);
-        const arr = [...((data ?? []) as Medicine[])];
-        for (let i = arr.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [arr[i], arr[j]] = [arr[j] as Medicine, arr[i] as Medicine];
-        }
-        return arr.slice(0, 8);
-      };
-      const rows = await pick(true);
-      return rows.length ? rows : await pick(false);
-    },
-  });
 
 
   return (
@@ -141,15 +115,7 @@ function Home() {
           <Link to="/dorilar"><Button variant="ghost" className="gap-1">{t("common.search")} <ArrowRight className="h-4 w-4" /></Button></Link>
         </div>
         <AiListSearch />
-        {medsLoading ? (
-          <AppLoading />
-        ) : medicines.length > 0 ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            {medicines.map((m) => <MedicineCard key={m.id} m={m} />)}
-          </div>
-        ) : (
-          <p className="text-muted-foreground">{t("medicines.empty")}</p>
-        )}
+        <RandomMedicines />
       </section>
 
       {/* News */}
