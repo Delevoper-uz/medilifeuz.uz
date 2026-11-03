@@ -10,8 +10,6 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { SEARCH_PAGE_SIZE } from "@/lib/operator-model";
-import { useOfflineMode } from '@/components/OfflineMode';
-import { offlineMedicines, saveOfflineMedicines } from '@/lib/offline-catalogue';
 
 
 export const Route = createFileRoute("/dorilar")({
@@ -46,13 +44,6 @@ function MedicinesPage() {
   const [maxPrice, setMaxPrice] = useState<string>("");
   const [sort, setSort] = useState<"az" | "za" | "price-asc" | "price-desc" | "random">("random");
   const [page, setPage] = useState(0);
-  const { offline } = useOfflineMode();
-  const [cacheRevision, setCacheRevision] = useState(0);
-  useEffect(() => {
-    const changed = () => setCacheRevision(v => v + 1);
-    window.addEventListener('medilife-catalogue-saved', changed);
-    return () => window.removeEventListener('medilife-catalogue-saved', changed);
-  }, []);
 
   useEffect(() => {
     const id = setTimeout(() => setDq(q.trim()), 250);
@@ -63,7 +54,7 @@ function MedicinesPage() {
   useEffect(() => setPage(0), [dq, minPrice, maxPrice, sort, currentLang]);
 
   const { data: result, isLoading, isFetching, isError, refetch } = useQuery({
-    queryKey: ["medicines-search", currentLang, dq, minPrice, maxPrice, sort, page, offline, offline ? cacheRevision : 0],
+    queryKey: ["medicines-search", currentLang, dq, minPrice, maxPrice, sort, page],
     networkMode: 'always',
     placeholderData: keepPreviousData,
     staleTime: sort === "random" ? 0 : 2 * 60 * 1000,
@@ -72,7 +63,6 @@ function MedicinesPage() {
     queryFn: async () => {
       const min = Number(minPrice) || 0;
       const max = Number(maxPrice) || 0;
-      if (offline) return offlineMedicines(currentLang, dq, min, max, sort, page, PAGE_SIZE);
 
       const run = async (withLang: boolean) => {
         let query = supabase.from("medicines").select("*", { count: "exact" });
@@ -107,8 +97,7 @@ function MedicinesPage() {
           const recovered = await fallback;
           data = recovered.data; error = recovered.error; count = data?.length ?? 0;
         }
-        if (error) { window.dispatchEvent(new Event('medilife-network-failed')); throw new Error(error.message); }
-        void saveOfflineMedicines((data ?? []) as Medicine[]).catch(() => undefined);
+        if (error) throw new Error(error.message);
         return { rows: (data ?? []) as Medicine[], total: count ?? 0 };
       };
 
@@ -146,7 +135,7 @@ function MedicinesPage() {
         <h1 className="text-4xl font-bold">{t("medicines.title")}</h1>
         <Input placeholder={t("common.search")} value={q} onChange={(e) => setQ(e.target.value)} className="max-w-xs" />
       </div>
-      {!offline && <AiListSearch />}
+      <AiListSearch />
 
       <div className="flex flex-wrap items-center gap-2 mb-6 p-3 rounded-lg border bg-card">
         <span className="text-sm font-medium">{i18n.language === 'uz_cyrl' ? 'Нарх:' : 'Narx:'}</span>
@@ -177,14 +166,14 @@ function MedicinesPage() {
         </div>
       ) : filtered.length === 0 ? (
 
-        <p className="text-muted-foreground">{offline ? (i18n.language === 'uz_cyrl' ? 'Сақланган дорилар топилмади.' : 'Saqlangan dorilar topilmadi.') : t("medicines.empty")}</p>
+        <p className="text-muted-foreground">{t("medicines.empty")}</p>
       ) : (
         <>
           <div className="text-xs text-muted-foreground mb-3">
             {i18n.language === 'uz_cyrl' ? 'Топилди:' : 'Topildi:'} {total.toLocaleString("uz-UZ")} {i18n.language === 'uz_cyrl' ? 'та' : 'ta'}
             {isFetching ? ` · ${t('common.loading')}` : ''}
           </div>
-          {(offline || sort !== "random" || dq) && total > PAGE_SIZE && <div className="flex items-center justify-center gap-3 mt-6">
+          {(sort !== "random" || dq) && total > PAGE_SIZE && <div className="flex items-center justify-center gap-3 mt-6">
             <Button variant="outline" disabled={page === 0 || isFetching} onClick={() => setPage(p => p - 1)}>{i18n.language === "uz_cyrl" ? "Олдинги" : "Oldingi"}</Button>
             <span>{page + 1}</span>
             <Button variant="outline" disabled={(page + 1) * PAGE_SIZE >= total || isFetching} onClick={() => setPage(p => p + 1)}>{i18n.language === "uz_cyrl" ? "Кейинги" : "Keyingi"}</Button>
