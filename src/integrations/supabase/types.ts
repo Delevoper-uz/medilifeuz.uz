@@ -668,12 +668,12 @@ export type Database = {
       }
       save_branch_location: {
         Args: {
-          p_branch_id: string
-          p_chat_id: string
-          p_latitude: number
-          p_longitude: number
-          p_map_url: string
-          p_name: string
+          p_branch_id?: string
+          p_chat_id?: string
+          p_latitude?: number
+          p_longitude?: number
+          p_map_url?: string
+          p_name?: string
         }
         Returns: string
       }

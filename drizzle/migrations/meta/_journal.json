@@ -15,6 +15,13 @@
       "when": 1793679704538,
       "tag": "0001_configured_branch_locations",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793679804136,
+      "tag": "0002_nullable_new_branch_location",
+      "breakpoints": true
     }
   ]
 }
