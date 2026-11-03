@@ -3,6 +3,13 @@ export type Branch = { id: string; name: string; latitude: number; longitude: nu
 
 export const BRANCHES: Branch[] = [];
 
+export function branchOrderCallback(branchId: string, orderId: string) {
+  const hex = branchId.replace(/-/g, '');
+  const bytes = hex.match(/.{2}/g) ?? [];
+  const compact = btoa(String.fromCharCode(...bytes.map(b => parseInt(b, 16)))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  return `b:${compact}:${orderId.replace(/-/g, '')}`;
+}
+
 export function isValidCoordinates(lat: number, lng: number) {
   return Number.isFinite(lat) && Number.isFinite(lng) && Math.abs(lat) <= 90 && Math.abs(lng) <= 180;
 }

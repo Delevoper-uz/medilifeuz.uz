@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { BRANCHES, coordinatesFromYandexUrl, haversineKm, nearestBranch, type Branch } from "../src/lib/branches";
+import { BRANCHES, branchOrderCallback, coordinatesFromYandexUrl, haversineKm, nearestBranch, type Branch } from "../src/lib/branches";
 
 test("haversine: Toshkent–Namangan taxminan 220 km", () => {
   const km = haversineKm(41.2995, 69.2401, 40.9983, 71.6726);
@@ -19,6 +19,15 @@ test("only entered branches participate; unentered 2-Filial is never selected", 
 test("no invented fallback locations", () => {
   expect(BRANCHES.length).toBe(0);
   expect(nearestBranch(41, 71, [])).toBeNull();
+});
+
+test('configured branch buttons fit Telegram 64-byte limit and retain exact ids', () => {
+  const branch = '12345678-abcd-1234-abcd-123456789012';
+  const order = '87654321-abcd-1234-abcd-123456789012';
+  const value = branchOrderCallback(branch, order);
+  expect(new TextEncoder().encode(value).length).toBeLessThanOrEqual(64);
+  expect(Buffer.from(value.split(':')[1], 'base64url').toString('hex')).toBe(branch.replace(/-/g, ''));
+  expect(value.split(':')[2]).toBe(order.replace(/-/g, ''));
 });
 
 test("Yandex pin longitude-latitude is converted and preferred over viewport", () => {

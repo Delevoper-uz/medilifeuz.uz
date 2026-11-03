@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { nearestBranch } from "@/lib/branches";
+import { branchOrderCallback, nearestBranch } from "@/lib/branches";
 
 const OrderItemSchema = z.object({
   medicine_id: z.string().uuid(),
@@ -126,7 +126,7 @@ export const placeOrder = createServerFn({ method: "POST" })
             reply_markup: {
               inline_keyboard: (near ? [near.branch] : branches).map(b => [{
                 text: `📥 ${b.name}`,
-                callback_data: `branch:${b.id.replace(/-/g, '')}:${order.id.replace(/-/g, '')}`,
+                callback_data: branchOrderCallback(b.id, order.id),
               }]),
             },
           }),

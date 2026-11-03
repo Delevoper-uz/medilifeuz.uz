@@ -51,14 +51,14 @@ export const Route = createFileRoute("/api/public/telegram/webhook")({
             }).catch(() => undefined);
 
           const m = /^take:(\d{1,2}):([0-9a-f-]{36})$/.exec(dataStr);
-          const configured = /^branch:([0-9a-f]{32}):([0-9a-f]{32})$/.exec(dataStr);
+          const configured = /^b:([A-Za-z0-9_-]{22}):([0-9a-f]{32})$/.exec(dataStr);
           if (m || configured) {
             const uuid = (s: string) => `${s.slice(0,8)}-${s.slice(8,12)}-${s.slice(12,16)}-${s.slice(16,20)}-${s.slice(20)}`;
             const orderId = configured ? uuid(configured[2]) : m?.[2];
             if (!orderId) return Response.json({ ok: true });
             const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
             let branch = `${m?.[1]}-Filial`;
-            const branchId = configured ? uuid(configured[1]) : null;
+            const branchId = configured ? uuid(Buffer.from(configured[1], 'base64url').toString('hex')) : null;
             const { data: existing, error: readError } = await supabaseAdmin
               .from("orders")
               .select("id, branch, status, routed_branch_id")
