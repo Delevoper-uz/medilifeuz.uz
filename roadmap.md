@@ -1,5 +1,9 @@
 # Requested work
 
+- [x] Show 20 random medicines initially and append 20 more per click in both Uzbek scripts; restore footer social icons. Home and catalogue readback passed in the browser.
+- [x] Add one to three relevant emoji to every Telegram button without changing callbacks. Existing operator callback/action tests passed; real Telegram-client press remains the separate operator check below.
+- [x] Verify the catalogue flow and deliver an updated, inspected source ZIP. Desktop/mobile checked; source-only archive excludes credentials, dependencies and repository metadata. Independent deployment and live data are not bundled.
+
 - [x] Remove three admin menus and pictured footer social rows; add Maps Coordinate beside branches with persisted Yandex coordinates and route orders only to configured branches. Admin link input, save/reload readback and cleanup passed; routing rules tested. Real Telegram order delivery remains unverified.
 
 - [x] Add controlled published-app offline support, cached medicines-only view, and best-effort refresh/gesture prevention; live browser disconnect check passed. Published cold-start check awaits a user-requested release.
