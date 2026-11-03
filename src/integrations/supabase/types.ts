@@ -62,6 +62,41 @@ export type Database = {
         }
         Relationships: []
       }
+      branch_locations: {
+        Row: {
+          branch_id: string
+          latitude: number
+          longitude: number
+          telegram_chat_id: string | null
+          updated_at: string
+          yandex_map_url: string | null
+        }
+        Insert: {
+          branch_id: string
+          latitude: number
+          longitude: number
+          telegram_chat_id?: string | null
+          updated_at?: string
+          yandex_map_url?: string | null
+        }
+        Update: {
+          branch_id?: string
+          latitude?: number
+          longitude?: number
+          telegram_chat_id?: string | null
+          updated_at?: string
+          yandex_map_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "branch_locations_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: true
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       branches: {
         Row: {
           address: string | null
@@ -630,6 +665,17 @@ export type Database = {
           p_value?: Json
         }
         Returns: Json
+      }
+      save_branch_location: {
+        Args: {
+          p_branch_id: string
+          p_chat_id: string
+          p_latitude: number
+          p_longitude: number
+          p_map_url: string
+          p_name: string
+        }
+        Returns: string
       }
     }
     Enums: {

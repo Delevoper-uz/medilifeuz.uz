@@ -8,6 +8,13 @@
       "when": 1793607105363,
       "tag": "0000_operator_prescription_delivery",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1793679704538,
+      "tag": "0001_configured_branch_locations",
+      "breakpoints": true
     }
   ]
 }
