@@ -74,6 +74,8 @@ export const placeOrder = createServerFn({ method: "POST" })
         address: data.address,
         note: data.note ?? null,
         status: "pending",
+        routed_branch_id: near?.branch.id ?? null,
+        routed_branch_distance_km: near?.km ?? null,
       })
       .select()
       .single();
@@ -122,12 +124,10 @@ export const placeOrder = createServerFn({ method: "POST" })
             text: lines.join("\n"),
             parse_mode: "HTML",
             reply_markup: {
-              inline_keyboard: Array.from({ length: 5 }, (_, row) =>
-                [row * 2 + 1, row * 2 + 2].map((n) => ({
-                  text: `📥 ${n}-Filial`,
-                  callback_data: `take:${n}:${order.id}`,
-                })),
-              ),
+              inline_keyboard: (near ? [near.branch] : branches).map(b => [{
+                text: `📥 ${b.name}`,
+                callback_data: `branch:${b.id.replace(/-/g, '')}:${order.id.replace(/-/g, '')}`,
+              }]),
             },
           }),
         });

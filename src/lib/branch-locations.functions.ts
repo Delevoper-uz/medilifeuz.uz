@@ -28,7 +28,7 @@ export const adminSaveBranchLocation = createServerFn({ method: 'POST' })
     const { supabaseAdmin } = await import('@/integrations/supabase/client.server');
     const mapUrl = `https://yandex.uz/maps/?pt=${data.longitude},${data.latitude}&ll=${data.longitude},${data.latitude}&z=17`;
     const { data: id, error } = await supabaseAdmin.rpc('save_branch_location', {
-      p_branch_id: data.branch_id, p_name: data.name, p_latitude: data.latitude,
+      p_branch_id: data.branch_id ?? undefined, p_name: data.name, p_latitude: data.latitude,
       p_longitude: data.longitude, p_chat_id: data.telegram_chat_id || '', p_map_url: mapUrl,
     });
     if (error) throw new Error(error.message);
