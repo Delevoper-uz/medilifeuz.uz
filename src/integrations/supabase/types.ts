@@ -392,6 +392,8 @@ export type Database = {
           delivery_type: string
           id: string
           note: string | null
+          routed_branch_distance_km: number | null
+          routed_branch_id: string | null
           status: string
           subtotal: number
           total: number
@@ -408,6 +410,8 @@ export type Database = {
           delivery_type?: string
           id?: string
           note?: string | null
+          routed_branch_distance_km?: number | null
+          routed_branch_id?: string | null
           status?: string
           subtotal?: number
           total?: number
@@ -424,13 +428,23 @@ export type Database = {
           delivery_type?: string
           id?: string
           note?: string | null
+          routed_branch_distance_km?: number | null
+          routed_branch_id?: string | null
           status?: string
           subtotal?: number
           total?: number
           updated_at?: string
           user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "orders_routed_branch_id_fkey"
+            columns: ["routed_branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       phone_otps: {
         Row: {
