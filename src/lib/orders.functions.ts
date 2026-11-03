@@ -1,6 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { nearestBranch } from "@/lib/branches";
 
@@ -23,6 +22,15 @@ const PlaceOrderSchema = z.object({
 export const placeOrder = createServerFn({ method: "POST" })
   .inputValidator((input) => PlaceOrderSchema.parse(input))
   .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import('@/integrations/supabase/client.server');
+    const { data: configured, error: branchError } = await supabaseAdmin
+      .from('branch_locations').select('branch_id, latitude, longitude, telegram_chat_id, branches!inner(id, name)');
+    if (branchError) throw new Error(branchError.message);
+    const branches = (configured ?? []).map(b => ({
+      id: b.branch_id, name: b.branches.name, latitude: b.latitude,
+      longitude: b.longitude, telegram_chat_id: b.telegram_chat_id,
+    }));
+    const near = data.lat != null && data.lng != null ? nearestBranch(data.lat, data.lng, branches) : null;
     const user_id = null;
     const delivery_type = "courier";
     const delivery_fee = 0; // shahar bo'ylab bepul
@@ -78,7 +86,6 @@ export const placeOrder = createServerFn({ method: "POST" })
 
 
     // 4) nearest branch
-    const near = data.lat != null && data.lng != null ? nearestBranch(data.lat, data.lng) : null;
 
     // 5) Telegram notify
     const token = process.env.TELEGRAM_BOT_TOKEN;
@@ -138,6 +145,7 @@ export const deleteMyOrder = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i) => DeleteOrderSchema.parse(i))
   .handler(async ({ data, context }) => {
+    const { supabaseAdmin } = await import('@/integrations/supabase/client.server');
     const { data: o, error } = await supabaseAdmin
       .from("orders")
       .select("id, user_id, status")

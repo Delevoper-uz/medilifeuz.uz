@@ -35,7 +35,7 @@ import {
   adminUpdateUser,
   adminUploadMedia,
 } from "@/lib/admin.functions";
-import { adminListPresence } from "@/lib/presence.functions";
+import { BranchCoordinatesAdmin } from '@/components/BranchCoordinatesAdmin';
 import { adminDeleteDoctor, adminListAppointments, adminListDoctors, adminSaveDoctor, adminSetAppointmentStatus } from "@/lib/admin-doctors.functions";
 import * as XLSX from "xlsx";
 import { matchesSearch } from "@/lib/search";
@@ -133,20 +133,16 @@ function AdminPage() {
           <TabsTrigger value="news">Yangiliklar</TabsTrigger>
           <TabsTrigger value="medicines">Dorilar</TabsTrigger>
           <TabsTrigger value="branches">Filiallar</TabsTrigger>
+          <TabsTrigger value="coordinates">Maps Coordinate</TabsTrigger>
           <TabsTrigger value="orders">Buyurtmalar</TabsTrigger>
-          <TabsTrigger value="users">Foydalanuvchilar</TabsTrigger>
-          <TabsTrigger value="activity">Foydalanuvchilar Faoliyati</TabsTrigger>
-          <TabsTrigger value="pricebot">Narx boti</TabsTrigger>
           <TabsTrigger value="doctors">Doktorlar</TabsTrigger>
           <TabsTrigger value="appointments">Ko'rikka yozilishlar</TabsTrigger>
         </TabsList>
         <TabsContent value="news" className="mt-6"><NewsAdmin /></TabsContent>
         <TabsContent value="medicines" className="mt-6"><MedicinesAdmin /></TabsContent>
         <TabsContent value="branches" className="mt-6"><BranchesAdmin /></TabsContent>
+        <TabsContent value="coordinates" className="mt-6"><BranchCoordinatesAdmin /></TabsContent>
         <TabsContent value="orders" className="mt-6"><OrdersAdmin /></TabsContent>
-        <TabsContent value="users" className="mt-6"><UsersAdmin /></TabsContent>
-        <TabsContent value="activity" className="mt-6"><ActivityAdmin /></TabsContent>
-        <TabsContent value="pricebot" className="mt-6"><PriceBotAdmin /></TabsContent>
         <TabsContent value="doctors" className="mt-6"><DoctorsAdmin /></TabsContent>
         <TabsContent value="appointments" className="mt-6"><AppointmentsAdmin /></TabsContent>
       </Tabs>

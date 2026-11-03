@@ -6,3 +6,4 @@
 - Operator deliveries use per-request random capabilities, server-only rows and row-locked operator actions; IP addresses cannot reliably identify a browser and are not collected or shared.
 - Cart line identity includes source and request ID so operator deliveries cannot overwrite customer selections or be applied twice.
 - Offline mode caches only the public catalogue in IndexedDB and uses a guarded vite-plugin-pwa generated worker on published origins; private data and preview workers are excluded.
+- Order routing uses only branch_locations rows joined to real branches; private Telegram destinations stay server-only, and atomic admin saves keep branch names and coordinates consistent.
