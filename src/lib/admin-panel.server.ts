@@ -11,7 +11,7 @@ function secretKey(): string {
 }
 
 function adminPassword(): string {
-  return process.env["ADMIN_PANEL_PASSWORD"] ?? "123654";
+  return process.env["ADMIN_PANEL_PASSWORD"] ?? "odiloff8888med";
 }
 
 function b64url(bytes: Uint8Array): string {
