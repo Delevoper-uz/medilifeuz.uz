@@ -32,7 +32,7 @@ import {
   adminUploadMedia,
 } from "@/lib/admin.functions";
 import { BranchCoordinatesAdmin } from '@/components/BranchCoordinatesAdmin';
-import { adminDeleteDoctor, adminListAppointments, adminListDoctors, adminSaveDoctor, adminSetAppointmentStatus } from "@/lib/admin-doctors.functions";
+import { adminDeleteAppointment, adminDeleteDoctor, adminListAppointments, adminListDoctors, adminSaveDoctor, adminSetAppointmentStatus } from "@/lib/admin-doctors.functions";
 import * as XLSX from "xlsx";
 import { matchesSearch } from "@/lib/search";
 
@@ -446,6 +446,7 @@ function DoctorsAdmin() {
 function AppointmentsAdmin() {
   const listFn = useServerFn(adminListAppointments);
   const statusFn = useServerFn(adminSetAppointmentStatus);
+  const deleteFn = useServerFn(adminDeleteAppointment);
   const { data = [], refetch } = useQuery({ queryKey: ["admin-appointments"], queryFn: () => listFn({ data: {} }), refetchInterval: 15000 });
   const labels: Record<string, string> = { pending: "Kutilmoqda", confirmed: "Tasdiqlandi", done: "Bajarildi", cancelled: "Bekor qilindi" };
   return (
@@ -461,6 +462,11 @@ function AppointmentsAdmin() {
             <SelectTrigger className="w-44"><SelectValue /></SelectTrigger>
             <SelectContent>{Object.entries(labels).map(([k, l]) => <SelectItem key={k} value={k}>{l}</SelectItem>)}</SelectContent>
           </Select>
+          <Button variant="destructive" size="sm" onClick={async () => {
+            if (!confirm("Bu yozilishni o'chirasizmi?")) return;
+            try { await deleteFn({ data: { id: a.id } }); toast.success("O'chirildi"); refetch(); }
+            catch { toast.error("O'chirib bo'lmadi"); }
+          }}>O'chirish</Button>
         </Card>
       ))}
     </div>
