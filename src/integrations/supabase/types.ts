@@ -108,6 +108,7 @@ export type Database = {
           map_url: string | null
           name: string
           phone: string | null
+          sort_order: number
           yandex_map_url: string | null
         }
         Insert: {
@@ -120,6 +121,7 @@ export type Database = {
           map_url?: string | null
           name: string
           phone?: string | null
+          sort_order?: number
           yandex_map_url?: string | null
         }
         Update: {
@@ -132,6 +134,7 @@ export type Database = {
           map_url?: string | null
           name?: string
           phone?: string | null
+          sort_order?: number
           yandex_map_url?: string | null
         }
         Relationships: []
@@ -183,6 +186,7 @@ export type Database = {
           name: string
           phone: string | null
           schedule: string | null
+          sort_order: number
           specialty: string | null
           updated_at: string
         }
@@ -194,6 +198,7 @@ export type Database = {
           name: string
           phone?: string | null
           schedule?: string | null
+          sort_order?: number
           specialty?: string | null
           updated_at?: string
         }
@@ -205,6 +210,7 @@ export type Database = {
           name?: string
           phone?: string | null
           schedule?: string | null
+          sort_order?: number
           specialty?: string | null
           updated_at?: string
         }
