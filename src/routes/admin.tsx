@@ -490,7 +490,7 @@ function BranchesAdmin() {
 
   const save = async (b: any) => {
     try {
-      await saveFn({ data: { id: b.id, name: b.name, image_url: b.image_url || null, phone: b.phone, address: b.address, map_url: b.map_url, map_type: "yandex", google_map_url: null, yandex_map_url: b.yandex_map_url || null } });
+      await saveFn({ data: { id: b.id, name: b.name, image_url: b.image_url || null, phone: b.phone, address: b.address, map_url: b.map_url, map_type: "yandex", google_map_url: null, yandex_map_url: b.yandex_map_url || null, sort_order: Number(b.sort_order) || 0 } });
       toast.success("Saqlandi"); setOpen(false); refetch();
     } catch { toast.error("Saqlashda xatolik. Qayta urinib ko'ring."); }
   };
@@ -499,7 +499,7 @@ function BranchesAdmin() {
   return (
     <div className="space-y-4">
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogTrigger asChild><Button onClick={() => setEditing({ name: "", image_url: "", phone: "", address: "", map_url: "", map_type: "yandex", yandex_map_url: "" })} className="gap-1"><Plus className="h-4 w-4" /> Qo'shish</Button></DialogTrigger>
+        <DialogTrigger asChild><Button onClick={() => setEditing({ name: "", image_url: "", phone: "", address: "", map_url: "", map_type: "yandex", yandex_map_url: "", sort_order: data.length + 1 })} className="gap-1"><Plus className="h-4 w-4" /> Qo'shish</Button></DialogTrigger>
         <DialogContent className="max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Filial</DialogTitle></DialogHeader>
           {editing && <div className="space-y-3">
@@ -508,6 +508,10 @@ function BranchesAdmin() {
             <div><Label>Telefon</Label><Input value={editing.phone ?? ""} onChange={(e) => setEditing({ ...editing, phone: e.target.value })} /></div>
             <div><Label>Manzil (matn)</Label><Input value={editing.address ?? ""} onChange={(e) => setEditing({ ...editing, address: e.target.value })} placeholder="Ko'cha, uy, mo'ljal..." /></div>
             <div><Label>Yandex Maps havolasi</Label><Input value={editing.yandex_map_url ?? ""} placeholder="https://yandex.uz/maps/..." onChange={(e) => setEditing({ ...editing, yandex_map_url: e.target.value })} /></div>
+            <div>
+              <Label>Tartib raqami (1-chi, 2-chi...)</Label>
+              <Input type="number" min={1} max={9999} value={editing.sort_order ?? ""} onChange={(e) => setEditing({ ...editing, sort_order: e.target.value })} placeholder="1" />
+            </div>
             <Button onClick={() => save({ ...editing, map_type: "yandex" })} className="w-full">Saqlash</Button>
           </div>}
         </DialogContent>
@@ -519,7 +523,10 @@ function BranchesAdmin() {
           <Card key={b.id} className="p-3 flex gap-3">
             {b.image_url && <img src={b.image_url} alt="" className="h-16 w-16 object-cover rounded" />}
             <div className="flex-1 min-w-0">
-              <h3 className="font-medium truncate">{b.name}</h3>
+              <h3 className="font-medium truncate flex items-center gap-2">
+                <span className="inline-flex h-6 min-w-6 shrink-0 items-center justify-center rounded-full bg-primary px-1.5 text-xs font-bold text-primary-foreground">{b.sort_order || "—"}</span>
+                {b.name}
+              </h3>
               <p className="text-xs text-muted-foreground truncate">{b.phone} · {b.address}</p>
             </div>
             <div className="flex flex-col gap-1">
