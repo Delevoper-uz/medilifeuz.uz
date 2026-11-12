@@ -218,6 +218,7 @@ const BranchSchema = z.object({
   map_type: z.enum(["text", "google", "yandex"]).optional(),
   google_map_url: z.string().max(1500).nullable().optional(),
   yandex_map_url: z.string().max(1500).nullable().optional(),
+  sort_order: z.number().int().min(0).max(9999).optional(),
 });
 
 
@@ -225,7 +226,11 @@ export const adminListBranches = createServerFn({ method: "POST" })
   .middleware([requireAdminPanel])
   .inputValidator((i) => (i ?? {}))
   .handler(async ({ context }) => {
-    const { data: rows, error } = await supabaseAdmin.from("branches").select("*").order("created_at", { ascending: false });
+    const { data: rows, error } = await supabaseAdmin
+      .from("branches")
+      .select("*")
+      .order("sort_order", { ascending: true })
+      .order("created_at", { ascending: true });
     if (error) throw new Error(error.message);
     return rows ?? [];
   });
@@ -243,6 +248,7 @@ export const adminSaveBranch = createServerFn({ method: "POST" })
       map_type: data.map_type ?? "google",
       google_map_url: data.google_map_url ?? null,
       yandex_map_url: data.yandex_map_url ?? null,
+      sort_order: data.sort_order ?? 0,
     };
     const query = data.id ? supabaseAdmin.from("branches").update(payload).eq("id", data.id) : supabaseAdmin.from("branches").insert(payload);
     const { error } = await query;

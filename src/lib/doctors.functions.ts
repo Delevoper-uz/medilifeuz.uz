@@ -33,7 +33,8 @@ export const listDoctors = createServerFn({ method: "GET" }).handler(async (): P
   const { data } = await (supabaseAdmin as unknown as { from: (t: string) => any })
     .from("doctors")
     .select("id, name, specialty, image_url, phone, branch, schedule")
-    .order("created_at", { ascending: false });
+    .order("sort_order", { ascending: true })
+    .order("created_at", { ascending: true });
   return (data ?? []) as Doctor[];
 });
 void publicClient;
