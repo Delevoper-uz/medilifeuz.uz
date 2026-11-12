@@ -25,7 +25,11 @@ function BranchesPage() {
   const { data = [], isLoading } = useQuery({
     queryKey: ["branches-all"],
     queryFn: async () => {
-      const { data } = await supabase.from("branches").select("*").order("created_at", { ascending: false });
+      const { data } = await supabase
+        .from("branches")
+        .select("*")
+        .order("sort_order", { ascending: true })
+        .order("created_at", { ascending: true });
       return data ?? [];
     },
   });

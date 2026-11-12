@@ -16,13 +16,18 @@ const DoctorSchema = z.object({
   phone: z.string().max(40).nullable().optional(),
   branch: z.string().max(180).nullable().optional(),
   schedule: z.string().max(300).nullable().optional(),
+  sort_order: z.number().int().min(0).max(9999).optional(),
 });
 
 export const adminListDoctors = createServerFn({ method: "POST" })
   .middleware([requireAdminPanel])
   .inputValidator((i) => i ?? {})
   .handler(async () => {
-    const { data, error } = await (await db()).from("doctors").select("*").order("created_at", { ascending: false });
+    const { data, error } = await (await db())
+      .from("doctors")
+      .select("*")
+      .order("sort_order", { ascending: true })
+      .order("created_at", { ascending: true });
     if (error) throw new Error(error.message);
     return (data ?? []) as any[];
   });
@@ -39,6 +44,7 @@ export const adminSaveDoctor = createServerFn({ method: "POST" })
       phone: rest.phone || null,
       branch: rest.branch || null,
       schedule: rest.schedule || null,
+      sort_order: rest.sort_order ?? 0,
     };
     const d = await db();
     const { error } = id ? await d.from("doctors").update(payload).eq("id", id) : await d.from("doctors").insert(payload);
