@@ -404,14 +404,14 @@ function DoctorsAdmin() {
   );
   const save = async () => {
     try {
-      await saveFn({ data: editing });
+      await saveFn({ data: { ...editing, sort_order: Number(editing?.sort_order) || 0 } });
       toast.success("Saqlandi"); setOpen(false); refetch();
     } catch (e: any) { toast.error(e?.message || "Saqlashda xatolik"); }
   };
   return (
     <div className="space-y-4">
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogTrigger asChild><Button onClick={() => setEditing({ name: "", specialty: "", image_url: "", phone: "", branch: "", schedule: "" })} className="gap-1"><Plus className="h-4 w-4" /> Doktor qo'shish</Button></DialogTrigger>
+        <DialogTrigger asChild><Button onClick={() => setEditing({ name: "", specialty: "", image_url: "", phone: "", branch: "", schedule: "", sort_order: data.length + 1 })} className="gap-1"><Plus className="h-4 w-4" /> Doktor qo'shish</Button></DialogTrigger>
         <DialogContent className="max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Doktor</DialogTitle></DialogHeader>
           {editing && <div className="space-y-3">
@@ -421,6 +421,10 @@ function DoctorsAdmin() {
             {f("phone", "Telefon")}
             {f("branch", "Filial")}
             {f("schedule", "Ish vaqti")}
+            <div>
+              <Label>Tartib raqami (1-chi, 2-chi...)</Label>
+              <Input type="number" min={1} max={9999} value={editing.sort_order ?? ""} onChange={(e) => setEditing({ ...editing, sort_order: e.target.value })} placeholder="1" />
+            </div>
             <Button onClick={() => void save()} className="w-full">Saqlash</Button>
           </div>}
         </DialogContent>
@@ -429,7 +433,10 @@ function DoctorsAdmin() {
         {data.map((d: any) => (
           <Card key={d.id} className="p-4 space-y-1">
             {d.image_url && <img src={d.image_url} alt={d.name} className="h-32 w-full object-cover rounded" />}
-            <div className="font-semibold">{d.name}</div>
+            <div className="font-semibold flex items-center gap-2">
+              <span className="inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-primary px-1.5 text-xs font-bold text-primary-foreground">{d.sort_order || "—"}</span>
+              {d.name}
+            </div>
             <div className="text-sm text-muted-foreground">{d.specialty} {d.branch ? `· ${d.branch}` : ""}</div>
             <div className="flex gap-2 pt-2">
               <Button size="sm" variant="outline" onClick={() => { setEditing(d); setOpen(true); }}><Pencil className="h-4 w-4" /></Button>
