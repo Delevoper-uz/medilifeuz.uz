@@ -17,6 +17,7 @@ import { Route as FiliallarRouteImport } from './routes/filiallar'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as SavatchaRouteImport } from './routes/savatcha'
 import { Route as YangiliklarRouteImport } from './routes/yangiliklar'
+import { Route as ApiPublicPriceSyncRouteImport } from './routes/api/public/price-sync'
 import { Route as ApiPublicTelegramPriceBotRouteImport } from './routes/api/public/telegram/price-bot'
 import { Route as ApiPublicTelegramWebhookRouteImport } from './routes/api/public/telegram/webhook'
 
@@ -60,6 +61,11 @@ const YangiliklarRoute = YangiliklarRouteImport.update({
   path: '/yangiliklar',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicPriceSyncRoute = ApiPublicPriceSyncRouteImport.update({
+  id: '/api/public/price-sync',
+  path: '/api/public/price-sync',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicTelegramPriceBotRoute =
   ApiPublicTelegramPriceBotRouteImport.update({
     id: '/api/public/telegram/price-bot',
@@ -82,6 +88,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/savatcha': typeof SavatchaRoute
   '/yangiliklar': typeof YangiliklarRoute
+  '/api/public/price-sync': typeof ApiPublicPriceSyncRoute
   '/api/public/telegram/price-bot': typeof ApiPublicTelegramPriceBotRoute
   '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
 }
@@ -94,6 +101,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/savatcha': typeof SavatchaRoute
   '/yangiliklar': typeof YangiliklarRoute
+  '/api/public/price-sync': typeof ApiPublicPriceSyncRoute
   '/api/public/telegram/price-bot': typeof ApiPublicTelegramPriceBotRoute
   '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
 }
@@ -107,6 +115,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/savatcha': typeof SavatchaRoute
   '/yangiliklar': typeof YangiliklarRoute
+  '/api/public/price-sync': typeof ApiPublicPriceSyncRoute
   '/api/public/telegram/price-bot': typeof ApiPublicTelegramPriceBotRoute
   '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
 }
@@ -121,6 +130,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/savatcha'
     | '/yangiliklar'
+    | '/api/public/price-sync'
     | '/api/public/telegram/price-bot'
     | '/api/public/telegram/webhook'
   fileRoutesByTo: FileRoutesByTo
@@ -133,6 +143,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/savatcha'
     | '/yangiliklar'
+    | '/api/public/price-sync'
     | '/api/public/telegram/price-bot'
     | '/api/public/telegram/webhook'
   id:
@@ -145,6 +156,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/savatcha'
     | '/yangiliklar'
+    | '/api/public/price-sync'
     | '/api/public/telegram/price-bot'
     | '/api/public/telegram/webhook'
   fileRoutesById: FileRoutesById
@@ -158,6 +170,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   SavatchaRoute: typeof SavatchaRoute
   YangiliklarRoute: typeof YangiliklarRoute
+  ApiPublicPriceSyncRoute: typeof ApiPublicPriceSyncRoute
   ApiPublicTelegramPriceBotRoute: typeof ApiPublicTelegramPriceBotRoute
   ApiPublicTelegramWebhookRoute: typeof ApiPublicTelegramWebhookRoute
 }
@@ -220,6 +233,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof YangiliklarRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/price-sync': {
+      id: '/api/public/price-sync'
+      path: '/api/public/price-sync'
+      fullPath: '/api/public/price-sync'
+      preLoaderRoute: typeof ApiPublicPriceSyncRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/telegram/price-bot': {
       id: '/api/public/telegram/price-bot'
       path: '/api/public/telegram/price-bot'
@@ -246,6 +266,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   SavatchaRoute: SavatchaRoute,
   YangiliklarRoute: YangiliklarRoute,
+  ApiPublicPriceSyncRoute: ApiPublicPriceSyncRoute,
   ApiPublicTelegramPriceBotRoute: ApiPublicTelegramPriceBotRoute,
   ApiPublicTelegramWebhookRoute: ApiPublicTelegramWebhookRoute,
 }
