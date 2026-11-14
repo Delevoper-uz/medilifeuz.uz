@@ -32,6 +32,7 @@ import {
   adminUploadMedia,
 } from "@/lib/admin.functions";
 import { BranchCoordinatesAdmin } from '@/components/BranchCoordinatesAdmin';
+import { PriceSyncAdmin } from '@/components/PriceSyncAdmin';
 import { adminDeleteAppointment, adminDeleteDoctor, adminListAppointments, adminListDoctors, adminSaveDoctor, adminSetAppointmentStatus } from "@/lib/admin-doctors.functions";
 import * as XLSX from "xlsx";
 import { matchesSearch } from "@/lib/search";
@@ -133,6 +134,7 @@ function AdminPage() {
           <TabsTrigger value="orders">Buyurtmalar</TabsTrigger>
           <TabsTrigger value="doctors">Doktorlar</TabsTrigger>
           <TabsTrigger value="appointments">Ko'rikka yozilishlar</TabsTrigger>
+          <TabsTrigger value="pricesync">Narx sinxron</TabsTrigger>
         </TabsList>
         <TabsContent value="news" className="mt-6"><NewsAdmin /></TabsContent>
         <TabsContent value="medicines" className="mt-6"><MedicinesAdmin /></TabsContent>
@@ -141,6 +143,7 @@ function AdminPage() {
         <TabsContent value="orders" className="mt-6"><OrdersAdmin /></TabsContent>
         <TabsContent value="doctors" className="mt-6"><DoctorsAdmin /></TabsContent>
         <TabsContent value="appointments" className="mt-6"><AppointmentsAdmin /></TabsContent>
+        <TabsContent value="pricesync" className="mt-6"><PriceSyncAdmin /></TabsContent>
       </Tabs>
     </div>
   );
