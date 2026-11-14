@@ -36,6 +36,13 @@
       "when": 1794490653554,
       "tag": "0004_add_sort_order_to_branches_and_doctors",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1794654893198,
+      "tag": "0005_price_sync_settings",
+      "breakpoints": true
     }
   ]
 }

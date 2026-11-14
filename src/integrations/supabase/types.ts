@@ -509,6 +509,63 @@ export type Database = {
         }
         Relationships: []
       }
+      price_sync_settings: {
+        Row: {
+          enabled: boolean
+          header_row: number
+          http_method: string
+          id: number
+          interval_minutes: number
+          keys: Json
+          last_run_at: string | null
+          last_status: string | null
+          name_col_index: number | null
+          name_column: string | null
+          price_col_index: number | null
+          price_column: string | null
+          source_url: string | null
+          stock_col_index: number | null
+          stock_column: string | null
+          updated_at: string
+        }
+        Insert: {
+          enabled?: boolean
+          header_row?: number
+          http_method?: string
+          id?: number
+          interval_minutes?: number
+          keys?: Json
+          last_run_at?: string | null
+          last_status?: string | null
+          name_col_index?: number | null
+          name_column?: string | null
+          price_col_index?: number | null
+          price_column?: string | null
+          source_url?: string | null
+          stock_col_index?: number | null
+          stock_column?: string | null
+          updated_at?: string
+        }
+        Update: {
+          enabled?: boolean
+          header_row?: number
+          http_method?: string
+          id?: number
+          interval_minutes?: number
+          keys?: Json
+          last_run_at?: string | null
+          last_status?: string | null
+          name_col_index?: number | null
+          name_column?: string | null
+          price_col_index?: number | null
+          price_column?: string | null
+          source_url?: string | null
+          stock_col_index?: number | null
+          stock_column?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
