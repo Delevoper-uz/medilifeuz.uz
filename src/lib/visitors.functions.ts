@@ -12,7 +12,13 @@ export const adminOrdersWithMetadata = createServerFn({ method: 'POST' })
       .select('*, order_items(*), order_request_metadata(ip_address, device, browser, os)')
       .order('created_at', { ascending: false });
     if (error) throw new Error('Buyurtmalar olinmadi');
-    return data ?? [];
+    return (data ?? []).map(order => ({
+      ...order,
+      order_request_metadata: order.order_request_metadata ? {
+        ...order.order_request_metadata,
+        ip_address: typeof order.order_request_metadata.ip_address === 'string' ? order.order_request_metadata.ip_address : null,
+      } : null,
+    }));
   });
 
 export const recordVisit = createServerFn({ method: 'POST' })
