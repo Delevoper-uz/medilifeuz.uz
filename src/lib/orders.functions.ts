@@ -2,6 +2,8 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { branchOrderCallback, nearestBranch } from "@/lib/branches";
+import { getRequest } from '@tanstack/react-start/server';
+import { requestMetadata } from '@/lib/request-metadata';
 
 const OrderItemSchema = z.object({
   medicine_id: z.string().uuid(),
@@ -85,6 +87,12 @@ export const placeOrder = createServerFn({ method: "POST" })
     const items = resolved.map((i) => ({ order_id: order.id, ...i }));
     const { error: ierr } = await supabaseAdmin.from("order_items").insert(items);
     if (ierr) throw new Error(ierr.message);
+
+    // Metadata must never prevent an otherwise successful customer order.
+    const metadata = requestMetadata(getRequest().headers, import.meta.env.PROD);
+    const { error: metadataError } = await supabaseAdmin.from('order_request_metadata')
+      .insert({ order_id: order.id, ...metadata });
+    if (metadataError) console.error('Order request metadata was not saved');
 
 
     // 4) nearest branch

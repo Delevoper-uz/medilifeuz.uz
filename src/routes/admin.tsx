@@ -33,6 +33,8 @@ import {
 } from "@/lib/admin.functions";
 import { BranchCoordinatesAdmin } from '@/components/BranchCoordinatesAdmin';
 import { PriceSyncAdmin } from '@/components/PriceSyncAdmin';
+import { VisitorsAdmin } from '@/components/VisitorsAdmin';
+import { adminOrdersWithMetadata } from '@/lib/visitors.functions';
 import { adminDeleteAppointment, adminDeleteDoctor, adminListAppointments, adminListDoctors, adminSaveDoctor, adminSetAppointmentStatus } from "@/lib/admin-doctors.functions";
 import * as XLSX from "xlsx";
 import { matchesSearch } from "@/lib/search";
@@ -132,6 +134,7 @@ function AdminPage() {
           <TabsTrigger value="branches">Filiallar</TabsTrigger>
           <TabsTrigger value="coordinates">Maps Coordinate</TabsTrigger>
           <TabsTrigger value="orders">Buyurtmalar</TabsTrigger>
+          <TabsTrigger value="visitors">Kirishlar</TabsTrigger>
           <TabsTrigger value="doctors">Doktorlar</TabsTrigger>
           <TabsTrigger value="appointments">Ko'rikka yozilishlar</TabsTrigger>
           <TabsTrigger value="pricesync">Narx sinxron</TabsTrigger>
@@ -141,6 +144,7 @@ function AdminPage() {
         <TabsContent value="branches" className="mt-6"><BranchesAdmin /></TabsContent>
         <TabsContent value="coordinates" className="mt-6"><BranchCoordinatesAdmin /></TabsContent>
         <TabsContent value="orders" className="mt-6"><OrdersAdmin /></TabsContent>
+        <TabsContent value="visitors" className="mt-6"><VisitorsAdmin /></TabsContent>
         <TabsContent value="doctors" className="mt-6"><DoctorsAdmin /></TabsContent>
         <TabsContent value="appointments" className="mt-6"><AppointmentsAdmin /></TabsContent>
         <TabsContent value="pricesync" className="mt-6"><PriceSyncAdmin /></TabsContent>
@@ -545,10 +549,10 @@ function BranchesAdmin() {
 
 /* ---------------- ORDERS ---------------- */
 function OrdersAdmin() {
-  const listFn = useServerFn(adminListOrders);
+  const listFn = useServerFn(adminOrdersWithMetadata);
   const statusFn = useServerFn(adminSetOrderStatus);
   const delFn = useServerFn(adminDeleteOrder);
-  const { data = [], refetch } = useQuery({ queryKey: ["admin-orders"], queryFn: () => listFn({ data: {} }) });
+  const { data = [], refetch } = useQuery({ queryKey: ["admin-orders"], queryFn: () => listFn() });
   const setStatus = async (id: string, status: string) => {
     try {
       await statusFn({ data: { id, status: status as any } });
@@ -571,11 +575,13 @@ function OrdersAdmin() {
     <div className="space-y-3">
       {data.map((o: any) => (
         <Card key={o.id} className="p-4">
-          <div className="flex justify-between mb-2 gap-2">
+          <div className="flex flex-wrap justify-between mb-2 gap-2">
             <div className="min-w-0">
               <p className="font-medium truncate">{o.customer_name} · {o.customer_phone}</p>
               <p className="text-xs text-muted-foreground">#{o.id.slice(0, 8)} · {new Date(o.created_at).toLocaleString()} · {o.delivery_type === "courier" ? "Kuryer" : "O'zi"}</p>
               {o.address && <p className="text-xs text-muted-foreground truncate">📍 {o.address}</p>}
+              <p className="text-xs text-muted-foreground break-all">IP: {o.order_request_metadata?.ip_address ?? 'Aniqlanmadi'}</p>
+              <p className="text-xs text-muted-foreground break-words">Qurilma: {o.order_request_metadata ? `${o.order_request_metadata.device} · ${o.order_request_metadata.os} · ${o.order_request_metadata.browser}` : 'Avvalgi buyurtma — ma’lumot yo‘q'}</p>
             </div>
             <div className="flex items-center gap-2 shrink-0">
               <Select value={o.status} onValueChange={(v) => setStatus(o.id, v)}>

@@ -18,6 +18,7 @@ import { AuthProvider } from "@/hooks/use-auth";
 import { CartProvider } from "@/hooks/use-cart";
 import { Toaster } from "@/components/ui/sonner";
 import { PresenceTracker } from "@/components/PresenceTracker";
+import { VisitorTracker } from "@/components/VisitorTracker";
 import { AppLoading, GlobalLoading } from "@/components/AppLoading";
 import { OperatorDeliveryProvider } from "@/components/OperatorDelivery";
 
@@ -139,6 +140,7 @@ function RootComponent() {
             <Footer />
           </div>
           <PresenceTracker />
+          <VisitorTracker />
           <AdminHotkey />
           <Toaster position="top-right" richColors />
 

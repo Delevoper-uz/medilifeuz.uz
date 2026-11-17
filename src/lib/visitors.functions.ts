@@ -4,6 +4,17 @@ import { z } from 'zod';
 import { requireAdminPanel } from './admin-middleware';
 import { requestMetadata, VisitSchema, type VisitorGroup } from './request-metadata';
 
+export const adminOrdersWithMetadata = createServerFn({ method: 'POST' })
+  .middleware([requireAdminPanel])
+  .handler(async () => {
+    const { supabaseAdmin } = await import('@/integrations/supabase/client.server');
+    const { data, error } = await supabaseAdmin.from('orders')
+      .select('*, order_items(*), order_request_metadata(ip_address, device, browser, os)')
+      .order('created_at', { ascending: false });
+    if (error) throw new Error('Buyurtmalar olinmadi');
+    return data ?? [];
+  });
+
 export const recordVisit = createServerFn({ method: 'POST' })
   .inputValidator((input) => VisitSchema.parse(input))
   .handler(async ({ data }) => {
