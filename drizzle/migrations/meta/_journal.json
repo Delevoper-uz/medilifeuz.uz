@@ -43,6 +43,13 @@
       "when": 1794654893198,
       "tag": "0005_price_sync_settings",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1794916443194,
+      "tag": "0006_private_visitor_order_metadata",
+      "breakpoints": true
     }
   ]
 }
