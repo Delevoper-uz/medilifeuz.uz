@@ -387,6 +387,38 @@ export type Database = {
           },
         ]
       }
+      order_request_metadata: {
+        Row: {
+          browser: string
+          device: string
+          ip_address: unknown
+          order_id: string
+          os: string
+        }
+        Insert: {
+          browser?: string
+          device?: string
+          ip_address?: unknown
+          order_id: string
+          os?: string
+        }
+        Update: {
+          browser?: string
+          device?: string
+          ip_address?: unknown
+          order_id?: string
+          os?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_request_metadata_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: true
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       orders: {
         Row: {
           address: string | null
@@ -721,11 +753,45 @@ export type Database = {
         }
         Relationships: []
       }
+      visitor_access_logs: {
+        Row: {
+          browser: string
+          created_at: string
+          device: string
+          id: string
+          ip_address: unknown
+          os: string
+          path: string
+        }
+        Insert: {
+          browser?: string
+          created_at?: string
+          device?: string
+          id?: string
+          ip_address?: unknown
+          os?: string
+          path: string
+        }
+        Update: {
+          browser?: string
+          created_at?: string
+          device?: string
+          id?: string
+          ip_address?: unknown
+          os?: string
+          path?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      admin_visitor_ip_groups: {
+        Args: { p_page?: number; p_search?: string }
+        Returns: Json
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

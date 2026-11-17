@@ -1,5 +1,7 @@
 # Requested work
 
+- [ ] Add private order IP/device metadata and automatic visitor logging, with admin IP grouping and paginated visit history; verify access denial and admin readback.
+
 - [x] Show 20 random medicines initially and append 20 more per click in both Uzbek scripts; restore footer social icons. Home and catalogue readback passed in the browser.
 - [x] Add one to three relevant emoji to every Telegram button without changing callbacks. Existing operator callback/action tests passed; real Telegram-client press remains the separate operator check below.
 - [x] Verify the catalogue flow and deliver an updated, inspected source ZIP. Desktop/mobile checked; source-only archive excludes credentials, dependencies and repository metadata. Independent deployment and live data are not bundled.
