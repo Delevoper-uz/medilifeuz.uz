@@ -50,6 +50,13 @@
       "when": 1794916443194,
       "tag": "0006_private_visitor_order_metadata",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1794916651606,
+      "tag": "0007_restrict_private_metadata_grants",
+      "breakpoints": true
     }
   ]
 }
