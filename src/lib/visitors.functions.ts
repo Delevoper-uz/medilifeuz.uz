@@ -1,5 +1,5 @@
 import { createServerFn } from '@tanstack/react-start';
-import { getRequest } from '@tanstack/react-start/server';
+import { getRequest, setResponseHeader } from '@tanstack/react-start/server';
 import { z } from 'zod';
 import { requireAdminPanel } from './admin-middleware';
 import { requestMetadata, VisitSchema, type VisitorGroup } from './request-metadata';
@@ -24,11 +24,19 @@ export const adminOrdersWithMetadata = createServerFn({ method: 'POST' })
 export const recordVisit = createServerFn({ method: 'POST' })
   .inputValidator((input) => VisitSchema.parse(input))
   .handler(async ({ data }) => {
+    setResponseHeader('Cache-Control', 'no-store');
     const { supabaseAdmin } = await import('@/integrations/supabase/client.server');
     const metadata = requestMetadata(getRequest().headers, import.meta.env.PROD);
     const { error } = await supabaseAdmin.from('visitor_access_logs').insert({ ...metadata, path: data.path });
     if (error) throw new Error('Tashrif saqlanmadi');
-    return { ok: true };
+    let welcome: boolean | null = null;
+    if (metadata.ip_address && data.path !== '/admin' && data.path !== '/login') {
+      const { data: claimed, error: claimError } = await supabaseAdmin.rpc('claim_visitor_welcome', { p_ip: metadata.ip_address });
+      welcome = !claimError && claimed === true;
+    } else if (metadata.ip_address) {
+      welcome = false;
+    }
+    return { ok: true, welcome };
   });
 
 export const adminVisitorGroups = createServerFn({ method: 'POST' })

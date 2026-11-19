@@ -783,6 +783,21 @@ export type Database = {
         }
         Relationships: []
       }
+      visitor_welcome_ips: {
+        Row: {
+          ip_address: unknown
+          welcomed_at: string
+        }
+        Insert: {
+          ip_address: unknown
+          welcomed_at?: string
+        }
+        Update: {
+          ip_address?: unknown
+          welcomed_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -792,6 +807,7 @@ export type Database = {
         Args: { p_page?: number; p_search?: string }
         Returns: Json
       }
+      claim_visitor_welcome: { Args: { p_ip: unknown }; Returns: boolean }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

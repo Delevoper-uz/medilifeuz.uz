@@ -19,6 +19,7 @@ import { CartProvider } from "@/hooks/use-cart";
 import { Toaster } from "@/components/ui/sonner";
 import { PresenceTracker } from "@/components/PresenceTracker";
 import { VisitorTracker } from "@/components/VisitorTracker";
+import { AmbientEffects } from "@/components/AmbientEffects";
 import { AppLoading, GlobalLoading } from "@/components/AppLoading";
 import { OperatorDeliveryProvider } from "@/components/OperatorDelivery";
 
@@ -130,7 +131,8 @@ function RootComponent() {
         <CartProvider>
           <OperatorDeliveryProvider>
           <GlobalLoading />
-          <div className="min-h-screen flex flex-col">
+           <AmbientEffects />
+           <div className="relative z-[1] min-h-screen flex flex-col">
             <Header />
             <main className="flex-1">
               <ClientOnly fallback={<AppLoading />}>
